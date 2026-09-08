@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PTW Stock Management System</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--nav:#16264a;--nav2:#22376a;--acc:#2f6feb;--gr:#12a150;--rd:#e5484d;--pp:#7b56d6;--or:#e08e0b;
+--bg:#f1f5fb;--cd:#fff;--ln:#e2e8f2;--tx:#1a2233;--mt:#6b7a90}
+body{font-family:"Segoe UI","Sarabun",system-ui,sans-serif;background:var(--bg);color:var(--tx);display:flex;min-height:100vh}
+aside{width:250px;background:var(--nav);color:#cfd9e8;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{padding:18px;border-bottom:1px solid #2a3f70}
+.brand h1{font-size:16px;color:#fff;letter-spacing:.5px}.brand span{font-size:10.5px;color:#8296b8}
+.rolebox{padding:12px 16px;border-bottom:1px solid #2a3f70}
+.rolebox label{font-size:10px;color:#8296b8;text-transform:uppercase;letter-spacing:.5px}
+.rolebox select{width:100%;margin-top:5px;padding:7px;border-radius:6px;border:1px solid #344d84;background:#1d3061;color:#fff;font-size:12.5px;font-family:inherit}
+nav{flex:1;padding:8px 0;overflow:auto}
+.ngrp{font-size:9.5px;color:#6d80a4;padding:11px 16px 5px;letter-spacing:1px;text-transform:uppercase}
+nav a{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:13.2px;color:#cfd9e8;cursor:pointer;border-left:3px solid transparent}
+nav a:hover{background:var(--nav2)}nav a.on{background:var(--nav2);border-left-color:var(--acc);color:#fff;font-weight:600}
+nav a i{width:16px;font-style:normal;text-align:center}nav a b{margin-left:auto;background:var(--rd);color:#fff;font-size:10px;padding:1px 6px;border-radius:9px}
+.sf{padding:10px 16px;font-size:10.5px;color:#6d80a4;border-top:1px solid #2a3f70}
+main{flex:1;padding:20px 24px;overflow:auto;max-width:calc(100vw - 250px)}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.top h2{font-size:20px}.top p{font-size:12px;color:var(--mt)}
+.page{display:none}.page.on{display:block}
+.card{background:var(--cd);border:1px solid var(--ln);border-radius:10px;padding:16px;margin-bottom:14px}
+.card h3{font-size:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin-bottom:14px}
+.kpi{background:var(--cd);border:1px solid var(--ln);border-radius:10px;padding:13px 15px;border-left:4px solid var(--acc)}
+.kpi.g{border-left-color:var(--gr)}.kpi.r{border-left-color:var(--rd)}.kpi.y{border-left-color:var(--or)}.kpi.p{border-left-color:var(--pp)}
+.kpi .l{font-size:11px;color:var(--mt);text-transform:uppercase;letter-spacing:.3px}
+.kpi .v{font-size:23px;font-weight:700;margin-top:4px}.kpi .s{font-size:11px;color:var(--mt);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:12.8px}
+th{background:#f7f9fc;text-align:left;padding:8px 9px;font-size:11px;color:var(--mt);text-transform:uppercase;border-bottom:1px solid var(--ln);white-space:nowrap}
+td{padding:8px 9px;border-bottom:1px solid #eef2f7;vertical-align:middle}
+tbody tr:hover{background:#fafcff}.r{text-align:right}.c{text-align:center}.tw{overflow-x:auto}
+.kpi.r,.kpi.g,.kpi.y,.kpi.p{text-align:left}
+input,select,textarea{width:100%;padding:8px 9px;border:1px solid #ccd6e4;border-radius:6px;font-size:12.8px;font-family:inherit;background:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px #2f6feb22}
+label{font-size:11px;color:var(--mt);display:block;margin-bottom:4px;font-weight:600}
+.grid{display:grid;gap:11px}.g2{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(148px,1fr))}
+button{padding:8px 14px;border:none;border-radius:6px;font-size:12.8px;font-weight:600;cursor:pointer;font-family:inherit}
+.b1{background:var(--acc);color:#fff}.bg{background:var(--gr);color:#fff}.br{background:var(--rd);color:#fff}
+.bp{background:var(--pp);color:#fff}.b2{background:#eef2f8;color:#41506a}.b2:hover{background:#e2e8f2}
+.bx{background:transparent;color:var(--rd);padding:4px 8px}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10.8px;font-weight:700;white-space:nowrap}
+.p-pend{background:#fff4d9;color:#8a6100}.p-apv{background:#e8eefc;color:#2559c4}
+.p-iss{background:#e3f7ec;color:#0d7a3e}.p-rej{background:#fdeaea;color:#c02a2f}
+.p-in{background:#e3f7ec;color:#0d7a3e}.p-out{background:#fdeaea;color:#c02a2f}
+.p-ok{background:#e8eefc;color:#2559c4}.p-low{background:#fff4d9;color:#8a6100}
+.p-zero{background:#fdeaea;color:#c02a2f}.p-off{background:#eef1f5;color:#75839a}
+.bar{height:7px;background:#eef2f7;border-radius:4px;overflow:hidden;min-width:62px}.bar i{display:block;height:100%;border-radius:4px}
+.mask{display:none;position:fixed;inset:0;background:#0b142499;z-index:50;align-items:center;justify-content:center;padding:14px}
+.mask.on{display:flex}.modal{background:#fff;border-radius:12px;width:100%;max-width:720px;max-height:92vh;overflow:auto}
+.mh{padding:14px 18px;border-bottom:1px solid var(--ln);display:flex;justify-content:space-between;align-items:center}
+.mb{padding:18px}.mf{padding:12px 18px;border-top:1px solid var(--ln);display:flex;gap:8px;justify-content:flex-end;background:#fafbfd}
+.rw{display:flex;gap:9px;align-items:flex-end;flex-wrap:wrap}
+.toast{position:fixed;bottom:20px;right:20px;background:#16264a;color:#fff;padding:12px 17px;border-radius:8px;font-size:12.8px;z-index:99;opacity:0;transform:translateY(12px);transition:.25s;max-width:330px}
+.toast.on{opacity:1;transform:none}
+.empty{text-align:center;padding:30px;color:var(--mt);font-size:12.8px}
+.chart{display:flex;align-items:flex-end;gap:12px;height:158px;padding-top:8px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.chart .stk{display:flex;gap:3px;align-items:flex-end;width:100%;height:100%;justify-content:center}
+.chart .bx2{width:17px;border-radius:3px 3px 0 0;min-height:2px}.chart small{font-size:10px;color:var(--mt)}
+.qr{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.qr img{border:1px solid var(--ln);border-radius:8px;padding:6px;background:#fff}
+.step{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.step div{flex:1;min-width:132px;background:#fff;border:1px solid var(--ln);border-left:3px solid var(--acc);border-radius:8px;padding:9px 11px;font-size:11.5px}
+.step div b{display:block;font-size:12.5px;margin-bottom:2px}
+.flowlog{font-size:12px;max-height:340px;overflow:auto}
+.flowlog div{padding:7px 10px;border-bottom:1px solid #eef2f7;display:flex;gap:8px}
+.flowlog span{color:var(--mt);white-space:nowrap;font-size:11px}
+.hide{display:none!important}
+@media(max-width:860px){aside{width:84px}.brand h1,.brand span,.rolebox,nav .ngrp,.sf,.userbadge span{display:none}main{max-width:100vw;padding:14px}
+nav a{flex-direction:column;justify-content:center;gap:3px;padding:8px 4px;position:relative}
+nav a i{width:auto;font-size:16px}
+nav a span{display:block;font-size:9px;line-height:1.15;text-align:center;white-space:normal;word-break:break-word;max-width:74px}
+nav a b{position:absolute;top:3px;right:10px;margin-left:0;font-size:8.5px;padding:0 5px}
+.userbadge{flex-direction:column;padding:8px 4px;gap:4px}.userbadge button{font-size:9px;padding:2px 0;text-align:center;width:100%}}
+
+/* ---- hover / focus glow ---- */
+button,.pill,tbody tr,input,select,textarea,nav a{transition:box-shadow .15s ease,background .15s ease,border-color .15s ease,transform .1s ease}
+button:hover:not(:disabled){box-shadow:0 0 0 4px #2f6feb22;transform:translateY(-1px)}
+button:active:not(:disabled){transform:translateY(0);box-shadow:0 0 0 2px #2f6feb22}
+.b1:hover{box-shadow:0 0 0 4px #2f6feb33}.bg:hover{box-shadow:0 0 0 4px #12a15033}
+.br:hover{box-shadow:0 0 0 4px #e5484d33}.bp:hover{box-shadow:0 0 0 4px #7b56d633}
+.bx:hover{box-shadow:0 0 0 4px #e5484d22;background:#fdeaea}
+input:hover,select:hover,textarea:hover{border-color:var(--acc);box-shadow:0 0 0 3px #2f6feb14}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 4px #2f6feb2e}
+nav a{position:relative}
+nav a:hover{background:var(--nav2);box-shadow:inset 3px 0 0 0 #2f6feb66}
+nav a.on:hover{box-shadow:inset 3px 0 0 0 var(--acc)}
+tbody tr{cursor:default}
+tbody tr:hover{background:#eef4ff;box-shadow:inset 0 0 0 1px #2f6feb1f}
+.kpi{transition:box-shadow .15s ease,transform .1s ease}
+.kpi:hover{box-shadow:0 0 0 4px #2f6feb14,0 4px 10px rgba(20,40,90,.08);transform:translateY(-1px)}
+.card{transition:box-shadow .15s ease}
+label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
+
+/* ---- login screen ---- */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(160deg,#16264a,#0b1631);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+#loginScreen.off{display:none}
+.loginbox{background:#fff;border-radius:14px;width:100%;max-width:380px;padding:28px 26px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.loginbox h1{font-size:17px;color:var(--nav);margin-bottom:2px}
+.loginbox p{font-size:11.5px;color:var(--mt);margin-bottom:18px}
+.loginbox .fld{margin-bottom:12px}
+.loginbox button{width:100%;padding:10px;font-size:13.5px;margin-top:6px}
+.loginerr{font-size:11.5px;color:var(--rd);min-height:16px;margin-top:6px}
+.demoacc{margin-top:16px;padding-top:14px;border-top:1px dashed var(--ln);font-size:10.8px;color:var(--mt);line-height:1.9}
+.demoacc b{color:var(--tx)}
+.demoacc div{cursor:pointer;padding:2px 6px;border-radius:5px}
+.demoacc div:hover{background:#eef4ff;box-shadow:0 0 0 3px #2f6feb14}
+.userbadge{display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid #2a3f70;font-size:11.5px;color:#cfd9e8}
+.userbadge b{color:#fff;font-weight:600}
+.userbadge button{background:transparent;color:#9db3dd;padding:3px 0;font-size:10.5px;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="loginbox">
+    <h1>PTW STOCK SYSTEM</h1>
+    <p id="loSubTxt">เข้าสู่ระบบเพื่อใช้งาน — ระบบล็อกอินฟรี ทำงานในเบราว์เซอร์ ไม่มีค่าใช้จ่าย</p>
+
+    <div id="loPane">
+      <div class="fld"><label>ชื่อผู้ใช้ / อีเมล</label><input id="loU" placeholder="เช่น admin" autocomplete="off"></div>
+      <div class="fld"><label>รหัสผ่าน</label><input id="loP" type="password" placeholder="รหัสผ่าน" autocomplete="off"></div>
+      <div class="loginerr" id="loErr"></div>
+      <button class="b1" onclick="doLogin()">เข้าสู่ระบบ</button>
+      <div class="demoacc">
+        <b>บัญชีเริ่มต้นระบบ (คลิกเพื่อกรอกอัตโนมัติ)</b>
+        <div onclick="fillLogin('admin','admin123')">admin / admin123 — ผู้ดูแลระบบ (ทุกสิทธิ์)</div>
+      </div>
+      <div class="demoacc" style="border-top:none;padding-top:6px">ยังไม่มีบัญชี? <span style="color:var(--acc);cursor:pointer;text-decoration:underline" onclick="showSignup()">สมัครสมาชิกใหม่</span> (จะได้สิทธิ์ผู้ชมก่อน รอผู้ดูแลระบบเลื่อนสิทธิ์ให้)</div>
+    </div>
+
+    <div id="suPane" class="hide">
+      <div class="fld"><label>ชื่อ-นามสกุล</label><input id="suName" placeholder="ชื่อ-นามสกุล" autocomplete="off"></div>
+      <div class="fld"><label>อีเมล</label><input id="suEmail" type="email" placeholder="you@example.com" autocomplete="off"></div>
+      <div class="fld"><label>รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label><input id="suPass" type="password" placeholder="รหัสผ่าน" autocomplete="off"></div>
+      <div class="loginerr" id="suErr"></div>
+      <button class="bp" onclick="doSignup()">สมัครสมาชิก</button>
+      <div class="demoacc" style="border-top:none;padding-top:6px">มีบัญชีแล้ว? <span style="color:var(--acc);cursor:pointer;text-decoration:underline" onclick="showLogin()">เข้าสู่ระบบ</span></div>
+    </div>
+  </div>
+</div>
+
+<aside>
+  <div class="brand"><h1>PTW STOCK SYSTEM</h1><span>รับเข้า · จ่ายออก · วิเคราะห์ต้นทุน</span></div>
+  <div class="rolebox" id="roleAdminBox" style="display:none"><label>บทบาทผู้ใช้งาน (พรีวิว — ผู้ดูแลระบบเท่านั้น)</label>
+    <select id="role" onchange="setRole()">
+      <option value="all">ผู้ดูแลระบบ (ทุกสิทธิ์)</option>
+      <option value="req">ผู้เบิก</option>
+      <option value="wh">เจ้าหน้าที่คลัง</option>
+      <option value="pur">เจ้าหน้าที่จัดซื้อ</option>
+      <option value="mgr">ผู้บริหาร</option>
+      <option value="viewer">ผู้ชม (อ่านอย่างเดียว)</option>
+    </select></div>
+  <nav id="nav">
+    <div class="ngrp" data-r="all,mgr,wh,pur,viewer">ภาพรวม</div>
+    <a class="on" data-p="dash" data-r="all,mgr,wh,pur,viewer"><i>▦</i><span>Dashboard</span></a>
+    <div class="ngrp" data-r="all,req,wh">งานผู้เบิก</div>
+    <a data-p="req" data-r="all,req"><i>✎</i><span>ทำใบเบิก</span></a>
+    <a data-p="track" data-r="all,req,wh"><i>◷</i><span>ติดตามสถานะ</span></a>
+    <div class="ngrp" data-r="all,wh,pur,viewer">งานคลังสินค้า</div>
+    <a data-p="apv" data-r="all,wh"><i>☑</i><span>ตรวจสอบใบเบิก</span><b id="bg1"></b></a>
+    <a data-p="iss" data-r="all,wh"><i>▲</i><span>จ่ายออก</span><b id="bg2"></b></a>
+    <a data-p="rcv" data-r="all,wh,pur"><i>▼</i><span>รับเข้า</span></a>
+    <a data-p="prod" data-r="all,wh,pur,mgr"><i>▣</i><span>สินค้าคงคลัง</span></a>
+    <a data-p="lg" data-r="all,wh,pur,mgr,viewer"><i>≡</i><span>ประวัติเคลื่อนไหว</span></a>
+    <div class="ngrp" data-r="all,mgr,wh">ระบบและวิเคราะห์</div>
+    <a data-p="kpi" data-r="all,mgr"><i>◈</i><span>Monthly KPI</span></a>
+    <a data-p="flow" data-r="all,wh"><i>⚙</i><span>Power Automate Log</span></a>
+    <a data-p="dept" data-r="all"><i>⌂</i><span>หน่วยงาน</span></a>
+    <div class="ngrp" data-r="all,req,wh,pur,mgr,viewer">บัญชี</div>
+    <a data-p="settings" data-r="all,req,wh,pur,mgr,viewer"><i>⚿</i><span>ตั้งค่าบัญชี</span></a>
+  </nav>
+  <div class="userbadge"><span>เข้าสู่ระบบ: <b id="loName">—</b></span><button onclick="doLogout()">ออกจากระบบ</button></div>
+  <div class="sf">v2.0 · Requisition Workflow</div>
+</aside>
+
+<main>
+  <div class="top">
+    <div><h2 id="ttl">Dashboard</h2><p id="sub">ภาพรวมและการวิเคราะห์ต้นทุนวัสดุ</p></div>
+    <div class="rw"><button class="b2" onclick="exportCSV()">⤓ Export CSV</button><button class="b2" onclick="refreshData()">↺ รีเฟรชข้อมูล</button></div>
+  </div>
+
+  <!-- ========== DASHBOARD ========== -->
+  <section class="page on" id="p-dash">
+    <div class="rw" style="margin-bottom:12px"><div style="width:200px"><label>เลือกเดือนวิเคราะห์</label><select id="mSel" onchange="rDash()"></select></div></div>
+    <div class="kpis" id="k1"></div>
+    <div class="kpis" id="k2"></div>
+    <div class="kpis" id="k3"></div>
+    <div class="kpis" id="k4"></div>
+    <div class="grid g2">
+      <div class="card"><h3>รายได้ vs ต้นทุนวัสดุ (รายเดือน)
+        <span style="font-weight:400;font-size:10.5px;color:var(--mt)"><span style="color:var(--acc)">■</span> รายได้ <span style="color:var(--rd)">■</span> ต้นทุน</span></h3>
+        <div class="chart" id="ch1"></div></div>
+      <div class="card"><h3>% ต้นทุนวัสดุต่อรายได้</h3><div class="chart" id="ch2"></div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>⚠ สินค้าต่ำกว่าจุดสั่งซื้อ (Min Stock)</h3>
+        <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">คงเหลือ</th><th class="r">Min</th><th class="c">สถานะ</th></tr></thead><tbody id="lowT"></tbody></table></div></div>
+      <div class="card"><h3>ใบเบิกค้างดำเนินการ</h3>
+        <div class="tw"><table><thead><tr><th>เลขที่</th><th>วันที่</th><th>หน่วยงาน</th><th class="c">รายการ</th><th class="c">สถานะ</th></tr></thead><tbody id="pendT"></tbody></table></div></div>
+    </div>
+    <div class="card"><h3>ต้นทุนจ่ายออกแยกตามหน่วยงาน</h3>
+      <div class="tw"><table><thead><tr><th>หน่วยงาน</th><th class="r">ใบเบิก</th><th class="r">มูลค่าเบิก (บาท)</th><th style="width:180px">สัดส่วน</th></tr></thead><tbody id="depCT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== ทำใบเบิก ========== -->
+  <section class="page" id="p-req">
+    <div class="step">
+      <div><b>1. เลือกหน่วยงาน</b>ระบุแผนกผู้ขอเบิก</div>
+      <div style="border-left-color:var(--pp)"><b>2. เลือกวัสดุ</b>เพิ่มได้ไม่จำกัดรายการ</div>
+      <div style="border-left-color:var(--or)"><b>3. ระบุจำนวน</b>จำนวนที่ต้องการ</div>
+      <div style="border-left-color:var(--gr)"><b>4. บันทึกเบิก</b>ระบบออกเลขที่และตัดสต็อกอัตโนมัติทันที</div>
+    </div>
+    <div class="card"><h3>จุดเข้าใช้งานสำหรับผู้เบิก (ไม่ต้องมี Outlook)</h3>
+      <div class="qr"><img id="qrimg" width="132" height="132" alt="QR">
+        <div style="font-size:12.5px;line-height:1.9;color:var(--mt)">
+          สแกน QR Code เพื่อเปิดฟอร์มใบเบิกบนมือถือ<br>
+          หรือเปิดลิงก์โดยตรง — รองรับผู้ใช้ที่ไม่มีบัญชี Microsoft 365<br>
+          <b style="color:var(--tx)">สิทธิ์:</b> ทำใบเบิก · ติดตามสถานะ · ดูประวัติการเบิก</div></div></div>
+    <div class="card" style="border-top:3px solid var(--pp)"><h3>✎ แบบฟอร์มใบขอเบิกวัสดุ (Requisition)</h3>
+      <div class="grid g3" style="margin-bottom:12px">
+        <div><label>เลขที่ใบเบิก (อัตโนมัติ)</label><input id="rqNo" readonly value="สร้างอัตโนมัติเมื่อบันทึก (ISS-YYYYMM-NNN)" style="background:#f4f7fb"></div>
+        <div><label>วันที่ขอเบิก *</label><input type="date" id="rqDate"></div>
+        <div><label>หน่วยงาน *</label><select id="rqDep"></select></div>
+        <div><label>ชื่อผู้ขอเบิก *</label><input id="rqBy" placeholder="ชื่อ-นามสกุล"></div>
+      </div>
+      <div class="rw" style="background:#f8f6fd;padding:12px;border-radius:8px;border:1px dashed #cfc0f0">
+        <div style="flex:2.6;min-width:190px"><label>วัสดุที่ต้องการเบิก</label><select id="rqP" onchange="rqBal()"></select></div>
+        <div style="flex:1"><label>คงเหลือในคลัง</label><input id="rqAvl" readonly style="background:#f4f7fb;text-align:right"></div>
+        <div style="flex:1"><label>จำนวนที่ขอ</label><input type="number" id="rqQ" min="1" value="1"></div>
+        <button class="bp" onclick="addRq()">+ เพิ่มรายการ</button>
+      </div>
+      <div class="tw" style="margin-top:12px"><table>
+        <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่ขอ</th><th>หน่วย</th><th class="r">ราคา/หน่วย</th><th class="r">มูลค่าประมาณ</th><th class="c">ลบ</th></tr></thead>
+        <tbody id="rqT"></tbody></table></div>
+      <div style="margin-top:11px"><label>หมายเหตุ / วัตถุประสงค์การใช้งาน</label><textarea id="rqRm" rows="2"></textarea></div>
+      <div class="rw" style="justify-content:flex-end;margin-top:12px">
+        <div style="font-size:13px;margin-right:12px">มูลค่าประมาณ: <b id="rqSum" style="color:var(--pp);font-size:18px">0.00</b> บาท</div>
+        <button class="b2" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp" onclick="saveRq()">✓ บันทึกเบิก (ตัดสต็อกทันที)</button></div></div>
+  </section>
+
+  <!-- ========== ติดตามสถานะ ========== -->
+  <section class="page" id="p-track">
+    <div class="card">
+      <div class="rw" style="margin-bottom:12px">
+        <div style="flex:1;min-width:170px"><label>ค้นหา</label><input id="qTk" placeholder="เลขที่ใบเบิก / ผู้ขอเบิก / หน่วยงาน" oninput="rTrack()"></div>
+        <div style="width:160px"><label>สถานะ</label><select id="sTk" onchange="rTrack()"><option value="">ทั้งหมด</option><option>รอตรวจสอบ</option><option>อนุมัติแล้ว</option><option>จ่ายแล้ว</option><option>ปฏิเสธ</option></select></div>
+      </div>
+      <div class="tw"><table><thead><tr><th>เลขที่ใบเบิก</th><th>วันที่ขอ</th><th>หน่วยงาน</th><th>ผู้ขอเบิก</th><th class="c">รายการ</th><th class="r">ขอเบิก</th><th class="r">จ่ายจริง</th><th class="r">มูลค่าจ่าย</th><th class="c">สถานะ</th><th class="c">ดู</th></tr></thead><tbody id="tkT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== ตรวจสอบใบเบิก ========== -->
+  <section class="page" id="p-apv">
+    <div class="card" style="border-top:3px solid var(--acc)"><h3>☑ ใบเบิกรอตรวจสอบและอนุมัติ</h3>
+      <div class="tw"><table><thead><tr><th>เลขที่</th><th>วันที่ขอ</th><th>หน่วยงาน</th><th>ผู้ขอเบิก</th><th class="c">รายการ</th><th class="r">มูลค่าประมาณ</th><th class="c">ความพร้อมของสต็อก</th><th class="c">ดำเนินการ</th></tr></thead><tbody id="apvT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== จ่ายออก ========== -->
+  <section class="page" id="p-iss">
+    <div class="card" style="border-top:3px solid var(--gr)"><h3>▲ ใบเบิกที่อนุมัติแล้ว — รอจ่ายออก</h3>
+      <div class="tw"><table><thead><tr><th>เลขที่</th><th>วันที่ขอ</th><th>หน่วยงาน</th><th>ผู้ขอเบิก</th><th class="c">รายการ</th><th class="r">มูลค่าประมาณ</th><th>ผู้อนุมัติ</th><th class="c">ดำเนินการ</th></tr></thead><tbody id="issT"></tbody></table></div></div>
+    <div class="card"><h3>ประวัติการจ่ายออกล่าสุด</h3>
+      <div class="tw"><table><thead><tr><th>เลขที่</th><th>วันที่จ่าย</th><th>หน่วยงาน</th><th class="r">มูลค่าจ่ายจริง</th><th class="c">Fill Rate</th><th>ผู้จ่าย</th></tr></thead><tbody id="issHT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== รับเข้า ========== -->
+  <section class="page" id="p-rcv">
+    <div class="card" style="border-top:3px solid var(--gr)"><h3>▼ ใบรับวัสดุเข้าคลัง (Goods Receipt)</h3>
+      <div class="grid g3" style="margin-bottom:12px">
+        <div><label>เลขที่ใบรับ (อัตโนมัติ)</label><input id="rcNo" readonly value="สร้างอัตโนมัติเมื่อบันทึก (REC-YYYYMM-NNN)" style="background:#f4f7fb"></div>
+        <div><label>วันที่รับ *</label><input type="date" id="rcDate"></div>
+        <div><label>ผู้จำหน่าย (Supplier) *</label><input id="rcSup" placeholder="เช่น บจก.เมดิคอลซัพพลาย"></div>
+        <div><label>ผู้รับเข้า</label><input id="rcBy" placeholder="ชื่อเจ้าหน้าที่"></div>
+      </div>
+      <div class="rw" style="background:#f7fbf8;padding:12px;border-radius:8px;border:1px dashed #b9e0c9">
+        <div style="flex:2.2;min-width:190px"><label>วัสดุ</label><select id="rcP" onchange="rcPr()"></select></div>
+        <div style="flex:1"><label>จำนวนที่สั่ง</label><input type="number" id="rcOQ" min="0" placeholder="เท่ากับจำนวนรับ"></div>
+        <div style="flex:1"><label>จำนวนที่รับจริง</label><input type="number" id="rcQ" min="1" value="1"></div>
+        <div style="flex:1"><label>ราคา/หน่วย</label><input type="number" id="rcPr" min="0" step="0.01"></div>
+        <button class="bg" onclick="addRc()">+ เพิ่มรายการ</button></div>
+      <div class="tw" style="margin-top:12px"><table>
+        <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">สั่ง</th><th class="r">รับจริง</th><th class="r">ค้างรับ</th><th>หน่วย</th><th class="r">ราคา/หน่วย</th><th class="r">รวม</th><th class="c">ลบ</th></tr></thead>
+        <tbody id="rcT"></tbody></table></div>
+      <div style="margin-top:11px"><label>หมายเหตุ</label><textarea id="rcRm" rows="2"></textarea></div>
+      <div class="rw" style="justify-content:flex-end;margin-top:12px">
+        <div style="font-size:13px;margin-right:12px">มูลค่ารวม: <b id="rcSum" style="color:var(--gr);font-size:18px">0.00</b> บาท</div>
+        <button class="b2" onclick="clrRc()">ล้างฟอร์ม</button><button class="bg" onclick="saveRc()">✓ บันทึกรับเข้า</button></div></div>
+    <div class="card"><h3>ประวัติการรับเข้า (Receive List)</h3>
+      <div class="tw"><table><thead><tr><th>ReceiveNo</th><th>วันที่</th><th>Supplier</th><th>รหัส</th><th>วัสดุ</th><th class="r">สั่ง</th><th class="r">รับจริง</th><th class="r">ค้างรับ</th><th class="r">UnitPrice</th><th class="r">Total</th></tr></thead><tbody id="rcHT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== สินค้าคงคลัง ========== -->
+  <section class="page" id="p-prod">
+    <div class="card">
+      <div class="rw" style="margin-bottom:12px">
+        <div style="flex:1;min-width:190px"><input id="qPd" placeholder="🔍 ค้นหารหัส / ชื่อวัสดุ..." oninput="rProd()"></div>
+        <select id="fPd" style="width:165px" onchange="rProd()"><option value="">ทุกสถานะ</option><option value="ok">ปกติ</option><option value="low">ต่ำกว่า Min</option><option value="zero">หมดสต็อก</option></select>
+        <button class="b1" onclick="openPd()">+ เพิ่มวัสดุ</button></div>
+      <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อวัสดุ</th><th>หน่วย</th><th class="r">ยอดยกมา</th><th class="r">คงเหลือ</th><th style="width:118px">ระดับสต็อก</th><th class="r">Min</th><th class="r">Reorder</th><th class="r">ราคา/หน่วย</th><th class="r">มูลค่ารวม</th><th class="c">สถานะ</th><th class="c">จัดการ</th></tr></thead><tbody id="pdT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== LEDGER ========== -->
+  <section class="page" id="p-lg">
+    <div class="card">
+      <div class="rw" style="margin-bottom:12px">
+        <div style="flex:1;min-width:165px"><label>ค้นหา</label><input id="qLg" placeholder="รหัส / ชื่อ / เอกสาร" oninput="rLg()"></div>
+        <div style="width:130px"><label>ประเภท</label><select id="tLg" onchange="rLg()"><option value="">ทั้งหมด</option><option value="IN">รับเข้า</option><option value="OUT">จ่ายออก</option></select></div>
+        <div style="width:145px"><label>ตั้งแต่</label><input type="date" id="d1" onchange="rLg()"></div>
+        <div style="width:145px"><label>ถึง</label><input type="date" id="d2" onchange="rLg()"></div></div>
+      <div class="tw"><table><thead><tr><th>วันที่-เวลา</th><th>เอกสาร</th><th class="c">ประเภท</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">เข้า</th><th class="r">ออก</th><th class="r">คงเหลือ</th><th>อ้างอิง</th><th>ผู้ทำรายการ</th></tr></thead><tbody id="lgT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== MONTHLY KPI ========== -->
+  <section class="page" id="p-kpi">
+    <div class="card"><h3>◈ บันทึกตัวชี้วัดรายเดือน (MonthlyKPI)</h3>
+      <div class="rw">
+        <div style="flex:1;min-width:130px"><label>เดือน (YYYY-MM)</label><input type="month" id="kM"></div>
+        <div style="flex:1"><label>รายได้รวม (Revenue)</label><input type="number" id="kR" min="0" step="0.01"></div>
+        <div style="flex:1"><label>จำนวน OPD (ครั้ง)</label><input type="number" id="kO" min="0"></div>
+        <div style="flex:1"><label>จำนวน IPD (ราย)</label><input type="number" id="kI" min="0"></div>
+        <div style="flex:1"><label>IPD Day (วันนอน)</label><input type="number" id="kD" min="0"></div>
+        <button class="b1" onclick="saveKpi()">บันทึก / ปรับปรุง</button></div></div>
+    <div class="card"><h3>ตารางวิเคราะห์ต้นทุนวัสดุเทียบตัวชี้วัด</h3>
+      <div class="tw"><table><thead><tr><th>เดือน</th><th class="r">รายได้</th><th class="r">ต้นทุนวัสดุ</th><th class="r">% ต่อรายได้</th><th class="r">OPD</th><th class="r">IPD</th><th class="r">IPD Day</th><th class="r">ต้นทุน/OPD</th><th class="r">ต้นทุน/IPD</th><th class="r">ต้นทุน/วันนอน</th><th class="c">ลบ</th></tr></thead><tbody id="kpiT"></tbody></table></div>
+      <p style="font-size:11.5px;color:var(--mt);margin-top:10px">* ต้นทุนวัสดุ (TotalIssueCost) คำนวณอัตโนมัติจากผลรวมมูลค่าใบเบิกที่มีสถานะ "จ่ายแล้ว" ภายในเดือนนั้น</p></div>
+  </section>
+
+  <!-- ========== FLOW LOG ========== -->
+  <section class="page" id="p-flow">
+    <div class="grid g2">
+      <div class="card"><h3>⚙ Flow ที่ทำงานในระบบ</h3>
+        <div class="tw"><table><thead><tr><th>#</th><th>ชื่อ Flow</th><th>Trigger</th></tr></thead><tbody>
+          <tr><td>1</td><td>สร้างเลขที่ใบเบิกอัตโนมัติ</td><td>เมื่อสร้าง Requisition</td></tr>
+          <tr><td>2</td><td>เพิ่ม / ลด Stock อัตโนมัติ</td><td>เมื่อบันทึกรับเข้า / จ่ายออก</td></tr>
+          <tr><td>3</td><td>แจ้งเตือน Stock ต่ำกว่า Min</td><td>เมื่อ CurrentStock ≤ MinStock</td></tr>
+          <tr><td>4</td><td>แจ้งเตือนรายการค้างจ่าย</td><td>เมื่อมีใบเบิกสถานะรอตรวจสอบ</td></tr>
+          <tr><td>5</td><td>สรุปรายงานประจำเดือน</td><td>Recurrence — วันที่ 1 ของเดือน</td></tr>
+        </tbody></table></div></div>
+      <div class="card"><h3>บันทึกการทำงานของ Flow (Run History)</h3><div class="flowlog" id="flT"></div></div></div>
+  </section>
+
+  <!-- ========== หน่วยงาน ========== -->
+  <section class="page" id="p-dept">
+    <div class="card">
+      <div class="rw" style="margin-bottom:12px">
+        <div style="flex:1"><label>รหัสหน่วยงาน</label><input id="dpC" placeholder="เช่น DEP-07"></div>
+        <div style="flex:2"><label>ชื่อหน่วยงาน</label><input id="dpN" placeholder="เช่น หอผู้ป่วยใน ชั้น 4"></div>
+        <button class="b1" onclick="addDept()">+ เพิ่มหน่วยงาน</button></div>
+      <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อหน่วยงาน</th><th class="r">ใบเบิกทั้งหมด</th><th class="r">จ่ายแล้ว</th><th class="r">มูลค่าเบิกสะสม</th><th class="c">จัดการ</th></tr></thead><tbody id="dpT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== ตั้งค่าบัญชี ========== -->
+  <section class="page" id="p-settings">
+    <div class="card"><h3>⚿ บัญชีของฉัน</h3>
+      <div class="grid g2" style="margin-bottom:14px;font-size:12.8px">
+        <div><b>ชื่อผู้ใช้:</b> <span id="acUsername">—</span></div>
+        <div><b>สิทธิ์การใช้งาน:</b> <span id="acRole">—</span></div>
+      </div>
+      <p style="font-size:11.5px;color:var(--mt);margin-bottom:12px;padding:8px 10px;background:#f4f7fb;border-radius:6px">ℹ️ การเปลี่ยนแปลงด้านล่างมีผลกับ<b style="color:var(--tx)">บัญชีที่กำลังล็อกอินอยู่นี้เท่านั้น</b> (<b id="acUsername2">—</b>) จะแก้บัญชีของคนอื่นจากหน้านี้ไม่ได้</p>
+      <div class="grid g2">
+        <div class="card" style="margin:0">
+          <h3 style="font-size:13px">เปลี่ยนอีเมลเข้าสู่ระบบ</h3>
+          <div class="fld" style="margin-bottom:10px"><label>อีเมลใหม่</label><input id="acEmail" type="email" placeholder="you@example.com"></div>
+          <button class="b1" id="acEmailBtn" onclick="changeEmail()">บันทึกอีเมลใหม่</button>
+          <span id="acEmailOk" class="hide" style="color:var(--gr);font-size:11.5px;margin-left:8px">✓ ส่งลิงก์แล้ว</span>
+          <p style="font-size:11px;color:var(--mt);margin-top:8px">⏳ <b>ยังไม่เสร็จทันที</b> — ระบบจะส่งลิงก์ยืนยันไปที่อีเมลใหม่ ต้องเปิดอีเมลแล้วกดลิงก์ยืนยันก่อน ถึงจะล็อกอินด้วยอีเมลนี้ได้จริง</p>
+        </div>
+        <div class="card" style="margin:0">
+          <h3 style="font-size:13px">เปลี่ยนรหัสผ่าน</h3>
+          <div class="fld" style="margin-bottom:10px"><label>รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label><input id="acPass" type="password" placeholder="รหัสผ่านใหม่" oninput="$('acPassErr').textContent=''"></div>
+          <div class="fld" style="margin-bottom:6px"><label>พิมพ์รหัสผ่านใหม่อีกครั้ง (กันพิมพ์พลาด)</label><input id="acPass2" type="password" placeholder="พิมพ์ซ้ำให้ตรงกัน" oninput="$('acPassErr').textContent=''"></div>
+          <label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer;font-weight:400"><input type="checkbox" style="width:auto" onchange="document.getElementById('acPass').type=this.checked?'text':'password';document.getElementById('acPass2').type=this.checked?'text':'password'"> แสดงรหัสผ่านที่พิมพ์</label>
+          <div class="loginerr" id="acPassErr" style="margin-bottom:6px"></div>
+          <button class="b1" id="acPassBtn" onclick="changePassword()">บันทึกรหัสผ่านใหม่</button>
+          <span id="acPassOk" class="hide" style="color:var(--gr);font-size:11.5px;margin-left:8px">✓ เปลี่ยนเสร็จแล้ว ใช้รหัสใหม่ได้ทันที</span>
+          <p style="font-size:11px;color:var(--mt);margin-top:8px">⚡ <b>เสร็จทันที</b> — ไม่ต้องยืนยันอะไรเพิ่ม กดแล้วใช้รหัสใหม่ล็อกอินครั้งต่อไปได้เลย</p>
+        </div>
+      </div>
+    </div>
+    <div class="card hide" id="userMgmtCard"><h3>จัดการผู้ใช้งานและสิทธิ์ (เฉพาะผู้ดูแลระบบ)</h3>
+      <div class="tw"><table><thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อ-นามสกุล</th><th class="c">สิทธิ์ปัจจุบัน</th><th style="width:190px">เปลี่ยนสิทธิ์เป็น</th><th class="c">บันทึก</th></tr></thead><tbody id="userT"></tbody></table></div></div>
+  </section>
+</main>
+
+<div class="mask" id="mask"><div class="modal"><div class="mh"><b id="mTtl"></b><button class="bx" onclick="closeM()">✕</button></div><div class="mb" id="mBody"></div><div class="mf" id="mFoot"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* ============ 1. CONSTANTS & STATE ============ */
+const SB_URL='https://ekvjwdistihmkcuquayl.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrdmp3ZGlzdGlobWtjdXF1YXlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4NTIzNDIsImV4cCI6MjEwNDQyODM0Mn0.6-MF5Xqy-0mzwi1d3K3xDBbE-ZGiOr3KOxzQXFInzrE';
+const sbClient=supabase.createClient(SB_URL,SB_KEY);
+const AUTH_DOMAIN='@ptw.local';
+const ST={P:'รอตรวจสอบ',A:'อนุมัติแล้ว',I:'จ่ายแล้ว',R:'ปฏิเสธ'};
+const PC={[ST.P]:'p-pend',[ST.A]:'p-apv',[ST.I]:'p-iss',[ST.R]:'p-rej'};
+let S={products:[],depts:[],receives:[],reqs:[],trans:[],flow:[],kpi:[],users:[]};
+let rqCart=[],rcCart=[],curReq=null,curUser=null;
+
+/* ============ 2. UTILITIES ============ */
+const $=i=>document.getElementById(i);
+const N=n=>Number(n||0).toLocaleString('th-TH');
+const M=n=>Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const M0=n=>Number(n||0).toLocaleString('th-TH',{maximumFractionDigits:0});
+const today=()=>new Date().toISOString().slice(0,10);
+const nowISO=()=>new Date().toISOString();
+const ym=d=>String(d).slice(0,7);
+const dd=s=>s?new Date(s).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+const dt=s=>new Date(s).toLocaleString('th-TH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+const mLabel=m=>{const[y,mo]=m.split('-');return new Date(+y,+mo-1,1).toLocaleDateString('th-TH',{month:'short',year:'2-digit'});};
+const P=c=>S.products.find(p=>p.code===c);
+const R=n=>S.reqs.find(r=>r.no===n);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3000);}
+function stat(p){if(p.cur<=0)return['p-zero','หมดสต็อก'];if(p.cur<=p.min)return['p-low','ต่ำกว่า Min'];return['p-ok','ปกติ'];}
+
+/* ============ 3. DATA LOAD (Supabase) ============ */
+async function flowLog(n,msg){await sbClient.from('flow_log').insert({flow_name:n,msg});}
+async function fetchAll(){
+  const[depR,prodR,reqR,itemR,rcvR,transR,flowR,kpiR,userR]=await Promise.all([
+    sbClient.from('departments').select('*').order('code'),
+    sbClient.from('products').select('*').order('code'),
+    sbClient.from('requisitions').select('*').order('created_at',{ascending:false}),
+    sbClient.from('requisition_items').select('*'),
+    sbClient.from('receives').select('*').order('created_at',{ascending:false}).limit(200),
+    sbClient.from('stock_transactions').select('*').order('ts',{ascending:false}).limit(500),
+    sbClient.from('flow_log').select('*').order('ts',{ascending:false}).limit(200),
+    sbClient.from('monthly_kpi').select('*').order('m'),
+    sbClient.from('profiles').select('*').order('username')
+  ]);
+  [depR,prodR,reqR,itemR,rcvR,transR,flowR,kpiR,userR].forEach(r=>{if(r.error){console.error(r.error);toast('โหลดข้อมูลผิดพลาด: '+r.error.message);}});
+  S.users=(userR.data||[]).map(u=>({id:u.id,username:u.username,full_name:u.full_name,role:u.role}));
+  S.depts=(depR.data||[]).map(d=>({c:d.code,n:d.name}));
+  const depName=c=>{const d=S.depts.find(x=>x.c===c);return d?d.n:c;};
+  S.products=(prodR.data||[]).map(p=>({id:p.id,code:p.code,name:p.name,unit:p.unit,price:+p.price,open:+p.open_qty,cur:+p.cur_qty,min:+p.min_qty,reorder:+p.reorder_point,act:p.active?1:0}));
+  const itemsByReq={};
+  (itemR.data||[]).forEach(it=>{(itemsByReq[it.req_no]=itemsByReq[it.req_no]||[]).push({code:it.code,name:it.name,unit:it.unit,rq:+it.rq,iq:+it.iq,price:+it.price,total:+it.total});});
+  S.reqs=(reqR.data||[]).map(r=>({no:r.no,date:r.req_date,dep:depName(r.dept_code),depCode:r.dept_code,by:r.requested_by,status:r.status,rm:r.remark||'',
+    apvBy:r.approved_by,issDate:r.issue_date,issBy:r.issued_by,total:+r.total,items:itemsByReq[r.no]||[]}));
+  S.receives=(rcvR.data||[]).map(x=>({no:x.no,date:x.rec_date,sup:x.supplier,code:x.code,name:x.name,qty:+x.qty,orderQty:+x.order_qty,pending:Math.max(0,+x.order_qty-+x.qty),price:+x.price,total:+x.total,rm:x.remark||''}));
+  S.trans=(transR.data||[]).map(x=>({ts:x.ts,doc:x.doc,type:x.type,code:x.code,name:x.name,qty:+x.qty,bal:+x.balance,ref:x.ref,by:x.by}));
+  S.flow=(flowR.data||[]).map(x=>({ts:x.ts,n:x.flow_name,msg:x.msg}));
+  S.kpi=(kpiR.data||[]).map(k=>({m:k.m,rev:+k.revenue,opd:+k.opd,ipd:+k.ipd,ipdd:+k.ipd_day}));
+}
+async function refreshData(){await fetchAll();renderAll();toast('โหลดข้อมูลล่าสุดเรียบร้อย');}
+/* ============ 5. NAVIGATION & ROLE ============ */
+const TT={dash:['Dashboard','ภาพรวมและการวิเคราะห์ต้นทุนวัสดุ'],req:['ทำใบเบิก','บันทึกเบิกวัสดุ — ตัดสต็อกอัตโนมัติทันทีเมื่อบันทึก'],
+ track:['ติดตามสถานะ','ตรวจสอบความคืบหน้าใบเบิก'],apv:['ตรวจสอบใบเบิก','ตรวจสอบรายการและอนุมัติการเบิก'],
+ iss:['จ่ายออก','จ่ายวัสดุตามจำนวนจริงและตัดสต็อก'],rcv:['รับเข้า','บันทึกการรับวัสดุจากการสั่งซื้อ'],
+ prod:['สินค้าคงคลัง','Products — ยอดคงเหลือและมูลค่าคลัง'],lg:['ประวัติเคลื่อนไหว','Stock Movement Ledger'],
+ kpi:['Monthly KPI','ตัวชี้วัดและต้นทุนต่อหน่วยบริการ'],flow:['Power Automate','บันทึกการทำงานอัตโนมัติ'],dept:['หน่วยงาน','Departments Master'],
+ settings:['ตั้งค่าบัญชี','จัดการบัญชีของฉันและสิทธิ์การใช้งาน']};
+const ROLE_LABEL={all:'ผู้ดูแลระบบ (ทุกสิทธิ์)',req:'ผู้เบิก',wh:'เจ้าหน้าที่คลัง',pur:'เจ้าหน้าที่จัดซื้อ',mgr:'ผู้บริหาร',viewer:'ผู้ชม (อ่านอย่างเดียว)'};
+function go(p){
+  document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  $('p-'+p).classList.add('on');$('ttl').textContent=TT[p][0];$('sub').textContent=TT[p][1];renderAll();
+}
+document.querySelectorAll('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.p));
+function applyRoleUI(r){
+  document.querySelectorAll('#nav [data-r]').forEach(e=>e.classList.toggle('hide',!e.dataset.r.split(',').includes(r)));
+  const vis=[...document.querySelectorAll('#nav a')].filter(a=>!a.classList.contains('hide'));
+  if(vis.length&&!vis.some(a=>a.classList.contains('on')))go(vis[0].dataset.p);
+}
+function setRole(){applyRoleUI($('role').value);}
+
+/* ============ 6. DASHBOARD ============ */
+const monthCost=m=>S.reqs.filter(r=>r.status===ST.I&&ym(r.issDate)===m).reduce((s,r)=>s+r.total,0);
+function rDash(){
+  const ms=S.kpi.map(k=>k.m);
+  if(!$('mSel').options.length||$('mSel').options.length!==ms.length+1){
+    $('mSel').innerHTML='<option value="ALL">ทุกเดือน (รวม)</option>'+ms.map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
+    if(ms.length)$('mSel').value=ms[ms.length-1];
+  }
+  const sel=$('mSel').value||'ALL';
+  const rows=sel==='ALL'?S.kpi:S.kpi.filter(k=>k.m===sel);
+  const agg=rows.reduce((a,k)=>({rev:a.rev+k.rev,opd:a.opd+k.opd,ipd:a.ipd+k.ipd,ipdd:a.ipdd+k.ipdd,cost:a.cost+monthCost(k.m)}),{rev:0,opd:0,ipd:0,ipdd:0,cost:0});
+  const pct=agg.rev?agg.cost/agg.rev*100:0;
+  $('k1').innerHTML=`
+   <div class="kpi"><div class="l">รายได้รวม</div><div class="v">${M0(agg.rev)}</div><div class="s">บาท (Revenue)</div></div>
+   <div class="kpi r"><div class="l">มูลค่าจ่ายออก</div><div class="v">${M0(agg.cost)}</div><div class="s">บาท (TotalIssueCost)</div></div>
+   <div class="kpi y"><div class="l">% ต้นทุนต่อรายได้</div><div class="v">${pct.toFixed(2)}%</div><div class="s">Material Cost Ratio</div></div>
+   <div class="kpi p"><div class="l">มูลค่าคงคลัง</div><div class="v">${M0(S.products.reduce((s,p)=>s+p.cur*p.price,0))}</div><div class="s">บาท (Inventory Value)</div></div>`;
+  $('k2').innerHTML=`
+   <div class="kpi"><div class="l">ผู้ป่วยนอก (OPD)</div><div class="v">${N(agg.opd)}</div><div class="s">ต้นทุน/ครั้ง ${M(agg.opd?agg.cost/agg.opd:0)} บาท</div></div>
+   <div class="kpi"><div class="l">ผู้ป่วยใน (IPD)</div><div class="v">${N(agg.ipd)}</div><div class="s">ต้นทุน/ราย ${M(agg.ipd?agg.cost/agg.ipd:0)} บาท</div></div>
+   <div class="kpi"><div class="l">วันนอน (IPD Day)</div><div class="v">${N(agg.ipdd)}</div><div class="s">ต้นทุน/วันนอน ${M(agg.ipdd?agg.cost/agg.ipdd:0)} บาท</div></div>
+   <div class="kpi g"><div class="l">ใบเบิกค้างดำเนินการ</div><div class="v">${N(S.reqs.filter(r=>r.status===ST.P||r.status===ST.A).length)}</div><div class="s">รายการรอตรวจสอบ/รอจ่าย</div></div>`;
+
+  const actProd=S.products.filter(p=>p.act==1);
+  const zeroN=actProd.filter(p=>p.cur<=0).length, lowN=actProd.filter(p=>p.cur>0&&p.cur<=p.min).length, okN=actProd.length-zeroN-lowN;
+  $('k3').innerHTML=`
+   <div class="kpi"><div class="l">จำนวนสินค้าทั้งหมด</div><div class="v">${N(actProd.length)}</div><div class="s">รายการที่ใช้งานอยู่</div></div>
+   <div class="kpi g"><div class="l">Stock พร้อมจ่าย</div><div class="v">${N(okN)}</div><div class="s">รายการ (ปกติ)</div></div>
+   <div class="kpi y"><div class="l">สินค้าใกล้หมด</div><div class="v">${N(lowN)}</div><div class="s">รายการ (≤ Min)</div></div>
+   <div class="kpi r"><div class="l">สินค้าหมด</div><div class="v">${N(zeroN)}</div><div class="s">รายการ (คงเหลือ 0)</div></div>`;
+
+  const rcvRows=S.receives.filter(x=>sel==='ALL'||ym(x.date)===sel);
+  const rcvDocs=new Set(rcvRows.map(x=>x.no)).size;
+  const rcvValue=rcvRows.reduce((s,x)=>s+x.total,0);
+  const rcvPending=rcvRows.filter(x=>x.pending>0).length;
+  $('k4').innerHTML=`
+   <div class="kpi"><div class="l">มูลค่ารับเข้า</div><div class="v">${M0(rcvValue)}</div><div class="s">บาท (ช่วงที่เลือก)</div></div>
+   <div class="kpi"><div class="l">จำนวนรายการรับ</div><div class="v">${N(rcvDocs)}</div><div class="s">ใบรับ (ช่วงที่เลือก)</div></div>
+   <div class="kpi y"><div class="l">รายการค้างรับ</div><div class="v">${N(rcvPending)}</div><div class="s">รายการที่รับไม่ครบ</div></div>`;
+
+  const data=S.kpi.map(k=>({m:k.m,rev:k.rev,cost:monthCost(k.m)}));
+  const mx=Math.max(1,...data.map(d=>d.rev));
+  $('ch1').innerHTML=data.length?data.map(d=>`<div class="col"><div class="stk">
+    <div class="bx2" style="height:${d.rev/mx*100}%;background:var(--acc)" title="รายได้ ${M0(d.rev)}"></div>
+    <div class="bx2" style="height:${Math.max(d.cost/mx*100,1)}%;background:var(--rd)" title="ต้นทุน ${M0(d.cost)}"></div>
+    </div><small>${mLabel(d.m)}</small></div>`).join(''):'<div class="empty">ยังไม่มีข้อมูล KPI</div>';
+  const pc=data.map(d=>({m:d.m,v:d.rev?d.cost/d.rev*100:0}));
+  const pmx=Math.max(0.01,...pc.map(x=>x.v));
+  $('ch2').innerHTML=pc.length?pc.map(d=>`<div class="col"><small style="font-weight:700;color:var(--tx)">${d.v.toFixed(2)}%</small>
+    <div class="stk"><div class="bx2" style="width:34px;height:${d.v/pmx*88}%;background:linear-gradient(180deg,#e08e0b,#f0b95a)"></div></div>
+    <small>${mLabel(d.m)}</small></div>`).join(''):'<div class="empty">ยังไม่มีข้อมูล</div>';
+
+  const low=S.products.filter(p=>p.act==1&&p.cur<=p.min);
+  $('lowT').innerHTML=low.length?low.map(p=>{const[c,t]=stat(p);
+    return `<tr><td><b>${p.code}</b></td><td>${p.name}</td><td class="r"><b>${N(p.cur)}</b></td><td class="r">${N(p.min)}</td><td class="c"><span class="pill ${c}">${t}</span></td></tr>`;}).join('')
+    :'<tr><td colspan="5" class="empty">✓ ทุกรายการอยู่ในระดับปกติ</td></tr>';
+  const pend=S.reqs.filter(r=>r.status===ST.P||r.status===ST.A);
+  $('pendT').innerHTML=pend.length?pend.map(r=>
+    `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.dep}</td><td class="c">${r.items.length}</td>
+     <td class="c"><span class="pill ${PC[r.status]}">${r.status}</span></td></tr>`).join('')
+    :'<tr><td colspan="5" class="empty">ไม่มีใบเบิกค้างดำเนินการ</td></tr>';
+
+  const iss=S.reqs.filter(r=>r.status===ST.I&&(sel==='ALL'||ym(r.issDate)===sel));
+  const byDep={};iss.forEach(r=>{byDep[r.dep]=byDep[r.dep]||{n:0,v:0};byDep[r.dep].n++;byDep[r.dep].v+=r.total;});
+  const tot=Object.values(byDep).reduce((s,x)=>s+x.v,0)||1;
+  const ent=Object.entries(byDep).sort((a,b)=>b[1].v-a[1].v);
+  $('depCT').innerHTML=ent.length?ent.map(([d,x])=>
+    `<tr><td>${d}</td><td class="r">${N(x.n)}</td><td class="r"><b>${M(x.v)}</b></td>
+     <td><div class="bar"><i style="width:${x.v/tot*100}%;background:var(--pp)"></i></div>
+     <small style="color:var(--mt)">${(x.v/tot*100).toFixed(1)}%</small></td></tr>`).join('')
+    :'<tr><td colspan="4" class="empty">ยังไม่มีข้อมูลการจ่ายออกในช่วงที่เลือก</td></tr>';
+}
+
+/* ============ 7. REQUISITION (ผู้เบิก) ============ */
+function fillSel(){
+  const opt=S.products.filter(p=>p.act==1).map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('');
+  ['rqP','rcP'].forEach(i=>{const v=$(i).value;$(i).innerHTML=opt;if(v)$(i).value=v;});
+  const dv=$('rqDep').value;$('rqDep').innerHTML=S.depts.map(d=>`<option value="${d.c}">${d.n}</option>`).join('');if(dv)$('rqDep').value=dv;
+  rqBal();rcPr();
+}
+function rqBal(){const p=P($('rqP').value);$('rqAvl').value=p?N(p.cur)+' '+p.unit:'';}
+function addRq(){
+  const c=$('rqP').value,q=+$('rqQ').value;
+  if(!c)return toast('กรุณาเลือกวัสดุ');
+  if(q<=0)return toast('จำนวนที่ขอต้องมากกว่า 0');
+  const p=P(c),ex=rqCart.find(x=>x.code===c);
+  if(ex)ex.rq+=q;else rqCart.push({code:c,name:p.name,unit:p.unit,rq:q,price:p.price});
+  $('rqQ').value=1;rRqCart();
+}
+function rRqCart(){
+  $('rqT').innerHTML=rqCart.length?rqCart.map((r,i)=>
+   `<tr><td>${i+1}</td><td><b>${r.code}</b></td><td>${r.name}</td><td class="r"><b style="color:var(--pp)">${N(r.rq)}</b></td>
+    <td>${r.unit}</td><td class="r">${M(r.price)}</td><td class="r"><b>${M(r.rq*r.price)}</b></td>
+    <td class="c"><button class="bx" onclick="rqCart.splice(${i},1);rRqCart()">✕</button></td></tr>`).join('')
+   :'<tr><td colspan="8" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่ต้องการเบิกได้ไม่จำกัดจำนวนรายการ</td></tr>';
+  $('rqSum').textContent=M(rqCart.reduce((s,r)=>s+r.rq*r.price,0));
+}
+async function saveRq(){
+  if(!rqCart.length)return toast('กรุณาเพิ่มรายการวัสดุอย่างน้อย 1 รายการ');
+  if(!$('rqDate').value)return toast('กรุณาระบุวันที่ขอเบิก');
+  if(!$('rqBy').value.trim())return toast('กรุณาระบุชื่อผู้ขอเบิก');
+  const items=rqCart.map(r=>({code:r.code,name:r.name,unit:r.unit,rq:r.rq,price:r.price}));
+  const{data:no,error}=await sbClient.rpc('fn_save_requisition',{p_dept:$('rqDep').value,p_by:$('rqBy').value.trim(),p_remark:$('rqRm').value,p_date:$('rqDate').value,p_items:items});
+  if(error)return toast('บันทึกไม่สำเร็จ: '+error.message);
+  clrRq();await fetchAll();renderAll();toast('บันทึกเบิก '+no+' เรียบร้อย — ตัดสต็อกอัตโนมัติแล้ว');
+}
+function clrRq(){rqCart=[];$('rqRm').value='';$('rqDate').value=today();rRqCart();}
+
+/* ============ 8. TRACKING ============ */
+function rTrack(){
+  const q=($('qTk').value||'').toLowerCase(),s=$('sTk').value;
+  const rows=S.reqs.filter(r=>(r.no+r.by+r.dep).toLowerCase().includes(q)).filter(r=>!s||r.status===s);
+  $('tkT').innerHTML=rows.length?rows.map(r=>{
+    const rq=r.items.reduce((a,i)=>a+i.rq,0),iq=r.items.reduce((a,i)=>a+i.iq,0);
+    return `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.dep}</td><td>${r.by}</td>
+     <td class="c">${r.items.length}</td><td class="r">${N(rq)}</td><td class="r">${r.status===ST.I?N(iq):'—'}</td>
+     <td class="r"><b>${r.total?M(r.total):'—'}</b></td>
+     <td class="c"><span class="pill ${PC[r.status]}">${r.status}</span></td>
+     <td class="c"><button class="b2" onclick="viewReq('${r.no}')">ดู</button></td></tr>`;}).join('')
+   :'<tr><td colspan="10" class="empty">ไม่พบใบเบิกตามเงื่อนไข</td></tr>';
+}
+function viewReq(no){
+  const r=R(no);curReq=r;
+  $('mTtl').textContent='รายละเอียดใบเบิก '+no;
+  $('mBody').innerHTML=`
+   <div class="grid g2" style="margin-bottom:12px;font-size:12.8px">
+    <div><b>วันที่ขอ:</b> ${dd(r.date)}</div><div><b>หน่วยงาน:</b> ${r.dep}</div>
+    <div><b>ผู้ขอเบิก:</b> ${r.by}</div><div><b>สถานะ:</b> <span class="pill ${PC[r.status]}">${r.status}</span></div>
+    <div><b>ผู้อนุมัติ:</b> ${r.apvBy||'—'}</div><div><b>วันที่จ่าย:</b> ${r.issDate?dd(r.issDate):'—'}</div></div>
+   <div class="tw"><table><thead><tr><th>รหัส</th><th>วัสดุ</th><th class="r">ขอเบิก</th><th class="r">จ่ายจริง</th><th class="r">ราคา/หน่วย</th><th class="r">รวม</th></tr></thead>
+   <tbody>${r.items.map(i=>`<tr><td>${i.code}</td><td>${i.name}</td><td class="r">${N(i.rq)}</td>
+    <td class="r"><b>${r.status===ST.I?N(i.iq):'—'}</b></td><td class="r">${M(i.price)}</td><td class="r">${i.total?M(i.total):'—'}</td></tr>`).join('')}</tbody></table></div>
+   ${r.rm?`<p style="margin-top:11px;font-size:12.5px"><b>หมายเหตุ:</b> ${r.rm}</p>`:''}`;
+  $('mFoot').innerHTML='<button class="b2" onclick="closeM()">ปิด</button>';
+  $('mask').classList.add('on');
+}
+const closeM=()=>$('mask').classList.remove('on');
+
+/* ============ 9. APPROVAL (คลัง) ============ */
+function rApv(){
+  const rows=S.reqs.filter(r=>r.status===ST.P);
+  $('apvT').innerHTML=rows.length?rows.map(r=>{
+    const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
+    const short=r.items.filter(i=>{const p=P(i.code);return !p||p.cur<i.rq;});
+    return `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.dep}</td><td>${r.by}</td>
+     <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td>
+     <td class="c">${short.length?`<span class="pill p-low">ไม่พอ ${short.length} รายการ</span>`:'<span class="pill p-in">เพียงพอ</span>'}</td>
+     <td class="c"><button class="b2" onclick="viewReq('${r.no}')">ดู</button>
+      <button class="b1" onclick="doApv('${r.no}')">อนุมัติ</button>
+      <button class="bx" onclick="doRej('${r.no}')">ปฏิเสธ</button></td></tr>`;}).join('')
+   :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอตรวจสอบ</td></tr>';
+}
+async function doApv(no){
+  const{error}=await sbClient.rpc('fn_approve_requisition',{p_no:no,p_by:curUser.full_name});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('อนุมัติใบเบิก '+no+' เรียบร้อย');}
+async function doRej(no){const rs=prompt('ระบุเหตุผลการปฏิเสธ:');if(rs===null)return;
+  const{error}=await sbClient.rpc('fn_reject_requisition',{p_no:no,p_reason:rs||'ไม่ระบุ'});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('ปฏิเสธใบเบิก '+no);}
+
+/* ============ 10. ISSUE (จ่ายออกตามจำนวนจริง) ============ */
+function rIss(){
+  const rows=S.reqs.filter(r=>r.status===ST.A);
+  $('issT').innerHTML=rows.length?rows.map(r=>{
+    const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
+    return `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.dep}</td><td>${r.by}</td>
+     <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td><td>${r.apvBy||'—'}</td>
+     <td class="c"><button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button></td></tr>`;}).join('')
+   :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอจ่ายออก</td></tr>';
+  const h=S.reqs.filter(r=>r.status===ST.I).slice(0,12);
+  $('issHT').innerHTML=h.length?h.map(r=>{
+    const rq=r.items.reduce((a,i)=>a+i.rq,0),iq=r.items.reduce((a,i)=>a+i.iq,0);
+    const fr=rq?iq/rq*100:0;
+    return `<tr><td><b>${r.no}</b></td><td>${dd(r.issDate)}</td><td>${r.dep}</td><td class="r"><b>${M(r.total)}</b></td>
+     <td class="c"><span class="pill ${fr>=100?'p-in':'p-low'}">${fr.toFixed(0)}%</span></td><td>${r.issBy||'—'}</td></tr>`;}).join('')
+   :'<tr><td colspan="6" class="empty">ยังไม่มีประวัติการจ่ายออก</td></tr>';
+}
+function openIss(no){
+  const r=R(no);curReq=r;
+  $('mTtl').textContent='จ่ายออกตามจำนวนจริง — '+no;
+  $('mBody').innerHTML=`
+   <div class="grid g3" style="margin-bottom:12px">
+    <div><label>หน่วยงาน</label><input value="${r.dep}" readonly style="background:#f4f7fb"></div>
+    <div><label>ผู้ขอเบิก</label><input value="${r.by}" readonly style="background:#f4f7fb"></div>
+    <div><label>วันที่จ่าย *</label><input type="date" id="isD" value="${today()}"></div>
+    <div><label>ผู้จ่ายวัสดุ</label><input id="isBy" placeholder="ชื่อเจ้าหน้าที่คลัง" value="${curUser.full_name}"></div></div>
+   <div class="tw"><table><thead><tr><th>รหัส</th><th>วัสดุ</th><th class="r">คงเหลือ</th><th class="r">ขอเบิก</th><th style="width:105px">จ่ายจริง</th><th class="r">มูลค่า</th></tr></thead>
+   <tbody>${r.items.map((i,x)=>{const p=P(i.code),mx=Math.min(i.rq,p?p.cur:0);
+     return `<tr><td>${i.code}</td><td>${i.name} <small style="color:var(--mt)">(${i.unit})</small></td>
+      <td class="r ${p&&p.cur<i.rq?'':''}"><b style="color:${p&&p.cur<i.rq?'var(--rd)':'var(--tx)'}">${N(p?p.cur:0)}</b></td>
+      <td class="r">${N(i.rq)}</td>
+      <td><input type="number" id="iq${x}" min="0" max="${p?p.cur:0}" value="${mx}" oninput="calcIss()" style="text-align:right"></td>
+      <td class="r" id="am${x}">${M(mx*i.price)}</td></tr>`;}).join('')}</tbody></table></div>
+   <div style="text-align:right;margin-top:11px;font-size:13px">มูลค่าจ่ายจริงรวม: <b id="isSum" style="color:var(--gr);font-size:18px">0.00</b> บาท</div>`;
+  $('mFoot').innerHTML='<button class="b2" onclick="closeM()">ยกเลิก</button><button class="bg" onclick="confirmIss()">✓ ยืนยันจ่ายออกและตัดสต็อก</button>';
+  $('mask').classList.add('on');calcIss();
+}
+function calcIss(){
+  let t=0;curReq.items.forEach((i,x)=>{const v=+($('iq'+x).value||0);t+=v*i.price;$('am'+x).textContent=M(v*i.price);});
+  $('isSum').textContent=M(t);
+}
+async function confirmIss(){
+  const r=curReq,d=$('isD').value,by=$('isBy').value.trim()||curUser.full_name;
+  if(!d)return toast('กรุณาระบุวันที่จ่าย');
+  let ok=true,any=false,items=[];
+  r.items.forEach((i,x)=>{const v=+($('iq'+x).value||0),p=P(i.code);
+    if(v<0){ok=false;}if(p&&v>p.cur){ok=false;toast('จำนวนจ่าย '+i.code+' เกินยอดคงเหลือ');}if(v>0)any=true;items.push({code:i.code,iq:v});});
+  if(!ok)return;
+  if(!any)return toast('กรุณาระบุจำนวนจ่ายจริงอย่างน้อย 1 รายการ');
+  const{error}=await sbClient.rpc('fn_issue_requisition',{p_no:r.no,p_date:d,p_by:by,p_items:items});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  closeM();await fetchAll();renderAll();toast('จ่ายออกใบเบิก '+r.no+' เรียบร้อย — ตัดสต็อกอัตโนมัติแล้ว');
+}
+
+/* ============ 11. RECEIVE ============ */
+function rcPr(){const p=P($('rcP').value);if(p&&!$('rcPr').value)$('rcPr').value=p.price;}
+function addRc(){
+  const c=$('rcP').value,q=+$('rcQ').value,oq=$('rcOQ').value===''?q:+$('rcOQ').value,pr=+$('rcPr').value;
+  if(!c)return toast('กรุณาเลือกวัสดุ');
+  if(q<=0)return toast('จำนวนรับต้องมากกว่า 0');
+  const p=P(c);rcCart.push({code:c,name:p.name,unit:p.unit,qty:q,orderQty:oq,price:pr||p.price});
+  $('rcQ').value=1;$('rcOQ').value='';$('rcPr').value='';rRcCart();
+}
+function rRcCart(){
+  $('rcT').innerHTML=rcCart.length?rcCart.map((r,i)=>{const pend=Math.max(0,r.orderQty-r.qty);
+   return `<tr><td>${i+1}</td><td><b>${r.code}</b></td><td>${r.name}</td><td class="r">${N(r.orderQty)}</td>
+    <td class="r"><b style="color:var(--gr)">${N(r.qty)}</b></td>
+    <td class="r">${pend?'<span class="pill p-low">'+N(pend)+'</span>':'—'}</td>
+    <td>${r.unit}</td><td class="r">${M(r.price)}</td><td class="r"><b>${M(r.qty*r.price)}</b></td>
+    <td class="c"><button class="bx" onclick="rcCart.splice(${i},1);rRcCart()">✕</button></td></tr>`;}).join('')
+   :'<tr><td colspan="10" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่รับเข้าคลัง</td></tr>';
+  $('rcSum').textContent=M(rcCart.reduce((s,r)=>s+r.qty*r.price,0));
+}
+async function saveRc(){
+  if(!rcCart.length)return toast('กรุณาเพิ่มรายการวัสดุอย่างน้อย 1 รายการ');
+  if(!$('rcDate').value)return toast('กรุณาระบุวันที่รับ');
+  if(!$('rcSup').value.trim())return toast('กรุณาระบุผู้จำหน่าย');
+  const d=$('rcDate').value,sup=$('rcSup').value.trim(),by=$('rcBy').value.trim()||curUser.full_name;
+  const items=rcCart.map(r=>({code:r.code,name:r.name,qty:r.qty,order_qty:r.orderQty,price:r.price}));
+  const{data:no,error}=await sbClient.rpc('fn_save_receive',{p_date:d,p_supplier:sup,p_by:by,p_remark:$('rcRm').value,p_items:items});
+  if(error)return toast('บันทึกไม่สำเร็จ: '+error.message);
+  clrRc();await fetchAll();renderAll();toast('บันทึกใบรับเข้า '+no+' เรียบร้อย');
+}
+function clrRc(){rcCart=[];$('rcSup').value='';$('rcRm').value='';$('rcBy').value='';$('rcDate').value=today();rRcCart();}
+function rRcH(){
+  $('rcHT').innerHTML=S.receives.length?S.receives.slice(0,25).map(r=>
+   `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.sup}</td><td>${r.code}</td><td>${r.name}</td>
+    <td class="r">${N(r.orderQty)}</td><td class="r">${N(r.qty)}</td>
+    <td class="r">${r.pending?'<span class="pill p-low">'+N(r.pending)+'</span>':'—'}</td>
+    <td class="r">${M(r.price)}</td><td class="r"><b>${M(r.total)}</b></td></tr>`).join('')
+   :'<tr><td colspan="10" class="empty">ยังไม่มีเอกสารรับเข้า</td></tr>';
+}
+
+/* ============ 12. PRODUCTS ============ */
+function rProd(){
+  const q=($('qPd').value||'').toLowerCase(),f=$('fPd').value;
+  const rows=S.products.filter(p=>(p.code+p.name).toLowerCase().includes(q))
+    .filter(p=>{if(!f)return true;const s=stat(p)[0];return f==='ok'?s==='p-ok':f==='low'?s==='p-low':s==='p-zero';});
+  $('pdT').innerHTML=rows.length?rows.map(p=>{
+    const[c,t]=stat(p),base=Math.max(p.open,p.cur,p.min*2,1),pct=Math.min(100,p.cur/base*100);
+    const col=c==='p-zero'?'var(--rd)':c==='p-low'?'var(--or)':'var(--gr)';
+    const reorderFlag=p.reorder>0&&p.cur<=p.reorder?'<br><span class="pill p-low" style="margin-top:2px">ควรสั่งซื้อ</span>':'';
+    return `<tr><td><b>${p.code}</b></td><td>${p.name}</td><td>${p.unit}</td><td class="r">${N(p.open)}</td>
+     <td class="r"><b style="font-size:13.5px">${N(p.cur)}</b></td>
+     <td><div class="bar"><i style="width:${pct}%;background:${col}"></i></div></td>
+     <td class="r">${N(p.min)}</td><td class="r">${p.reorder>0?N(p.reorder):'—'}</td><td class="r">${M(p.price)}</td><td class="r"><b>${M(p.cur*p.price)}</b></td>
+     <td class="c">${p.act==1?`<span class="pill ${c}">${t}</span>`:'<span class="pill p-off">ปิดใช้งาน</span>'}${reorderFlag}</td>
+     <td class="c"><button class="b2" onclick="openPd(${p.id})">แก้ไข</button> <button class="bx" onclick="delPd(${p.id})">ลบ</button></td></tr>`;}).join('')
+   :'<tr><td colspan="12" class="empty">ไม่พบข้อมูลวัสดุ</td></tr>';
+}
+function openPd(id){
+  const p=id?S.products.find(x=>x.id===id):null;
+  $('mTtl').textContent=p?'แก้ไขข้อมูลวัสดุ':'เพิ่มวัสดุใหม่';
+  $('mBody').innerHTML=`<input type="hidden" id="fId" value="${p?p.id:''}">
+   <div class="grid g2">
+    <div><label>ProductCode *</label><input id="fC" value="${p?p.code:''}"></div>
+    <div><label>ProductName *</label><input id="fN" value="${p?p.name:''}"></div>
+    <div><label>Unit (หน่วยนับ)</label><input id="fU" value="${p?p.unit:''}" placeholder="ชิ้น / กล่อง / ชุด"></div>
+    <div><label>UnitPrice (ราคา/หน่วย)</label><input type="number" step="0.01" id="fP" value="${p?p.price:0}"></div>
+    <div><label>OpeningStock (ยอดยกมา)</label><input type="number" id="fO" value="${p?p.open:0}"></div>
+    <div><label>MinStock (จุดแจ้งเตือน)</label><input type="number" id="fM" value="${p?p.min:0}"></div>
+    <div><label>ReorderPoint (จุดสั่งซื้อ)</label><input type="number" id="fR" value="${p?p.reorder:0}"></div>
+    <div><label>Active</label><select id="fA"><option value="1" ${p&&p.act==0?'':'selected'}>ใช้งาน</option><option value="0" ${p&&p.act==0?'selected':''}>ยกเลิกใช้งาน</option></select></div>
+    ${p?`<div><label>CurrentStock (ปรับยอดคงเหลือ)</label><input type="number" id="fCur" value="${p.cur}"></div>`:''}
+   </div>`;
+  $('mFoot').innerHTML='<button class="b2" onclick="closeM()">ยกเลิก</button><button class="b1" onclick="savePd()">บันทึก</button>';
+  $('mask').classList.add('on');
+}
+async function savePd(){
+  const c=$('fC').value.trim(),n=$('fN').value.trim();
+  if(!c||!n)return toast('กรุณาระบุรหัสและชื่อวัสดุ');
+  const id=$('fId').value,o={code:c,name:n,unit:$('fU').value.trim()||'ชิ้น',price:+$('fP').value,open_qty:+$('fO').value,min_qty:+$('fM').value,reorder_point:+$('fR').value,active:+$('fA').value===1};
+  let err;
+  if(id){
+    const p=S.products.find(x=>x.id==id);const nc=$('fCur')?+$('fCur').value:p.cur;
+    if(nc!==p.cur)await flowLog('Adjust','ปรับยอดคงเหลือ '+p.code+' จาก '+N(p.cur)+' → '+N(nc));
+    ({error:err}=await sbClient.from('products').update({...o,cur_qty:nc}).eq('id',id));
+  }else{
+    if(P(c))return toast('รหัสวัสดุนี้มีอยู่ในระบบแล้ว');
+    ({error:err}=await sbClient.from('products').insert({...o,cur_qty:o.open_qty}));
+  }
+  if(err)return toast('ผิดพลาด: '+err.message);
+  closeM();await fetchAll();renderAll();toast('บันทึกข้อมูลวัสดุเรียบร้อย');
+}
+async function delPd(id){
+  const p=S.products.find(x=>x.id===id);
+  if(S.trans.some(t=>t.code===p.code))return toast('ไม่สามารถลบได้ — วัสดุมีประวัติการเคลื่อนไหว');
+  if(!confirm('ยืนยันการลบ '+p.name+' ?'))return;
+  const{error}=await sbClient.from('products').delete().eq('id',id);
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('ลบข้อมูลเรียบร้อย');
+}
+
+/* ============ 13. LEDGER ============ */
+function lgRows(){
+  const q=($('qLg').value||'').toLowerCase(),t=$('tLg').value,a=$('d1').value,b=$('d2').value;
+  return S.trans.filter(x=>(x.code+x.name+x.doc).toLowerCase().includes(q)).filter(x=>!t||x.type===t)
+    .filter(x=>{const d=x.ts.slice(0,10);return(!a||d>=a)&&(!b||d<=b);});
+}
+function rLg(){
+  const r=lgRows();
+  $('lgT').innerHTML=r.length?r.slice(0,300).map(t=>
+   `<tr><td>${dt(t.ts)}</td><td><b>${t.doc}</b></td><td class="c"><span class="pill ${t.type==='IN'?'p-in':'p-out'}">${t.type}</span></td>
+    <td>${t.code}</td><td>${t.name}</td>
+    <td class="r" style="color:var(--gr);font-weight:700">${t.type==='IN'?'+'+N(t.qty):'—'}</td>
+    <td class="r" style="color:var(--rd);font-weight:700">${t.type==='OUT'?'−'+N(t.qty):'—'}</td>
+    <td class="r"><b>${N(t.bal)}</b></td><td>${t.ref}</td><td>${t.by}</td></tr>`).join('')
+   :'<tr><td colspan="10" class="empty">ไม่พบรายการตามเงื่อนไข</td></tr>';
+}
+
+/* ============ 14. MONTHLY KPI ============ */
+async function saveKpi(){
+  const m=$('kM').value;if(!m)return toast('กรุณาระบุเดือน');
+  const o={m,revenue:+$('kR').value||0,opd:+$('kO').value||0,ipd:+$('kI').value||0,ipd_day:+$('kD').value||0};
+  const{error}=await sbClient.from('monthly_kpi').upsert(o);
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await flowLog('Flow 5 · Monthly Report','ปรับปรุงตัวชี้วัดเดือน '+mLabel(m)+' — ต้นทุนวัสดุ '+M(monthCost(m))+' บาท');
+  await fetchAll();renderAll();toast('บันทึกตัวชี้วัดเดือน '+mLabel(m)+' เรียบร้อย');
+}
+async function delKpi(m){
+  if(!confirm('ลบข้อมูลเดือน '+mLabel(m)+' ?'))return;
+  const{error}=await sbClient.from('monthly_kpi').delete().eq('m',m);
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();
+}
+function rKpi(){
+  $('kpiT').innerHTML=S.kpi.length?S.kpi.map(k=>{const c=monthCost(k.m);
+    return `<tr><td><b>${mLabel(k.m)}</b></td><td class="r">${M0(k.rev)}</td><td class="r"><b style="color:var(--rd)">${M0(c)}</b></td>
+     <td class="r"><b>${k.rev?(c/k.rev*100).toFixed(2):'0.00'}%</b></td>
+     <td class="r">${N(k.opd)}</td><td class="r">${N(k.ipd)}</td><td class="r">${N(k.ipdd)}</td>
+     <td class="r">${M(k.opd?c/k.opd:0)}</td><td class="r">${M(k.ipd?c/k.ipd:0)}</td><td class="r">${M(k.ipdd?c/k.ipdd:0)}</td>
+     <td class="c"><button class="bx" onclick="delKpi('${k.m}')">ลบ</button></td></tr>`;}).join('')
+   :'<tr><td colspan="11" class="empty">ยังไม่มีข้อมูลตัวชี้วัด</td></tr>';
+}
+
+/* ============ 15. FLOW LOG & DEPT ============ */
+function rFlow(){
+  $('flT').innerHTML=S.flow.length?S.flow.slice(0,80).map(f=>
+   `<div><span>${dt(f.ts)}</span><b style="color:var(--acc);white-space:nowrap">${f.n}</b><span style="color:var(--tx)">${f.msg}</span></div>`).join('')
+   :'<div class="empty">ยังไม่มีบันทึกการทำงาน</div>';
+}
+async function addDept(){
+  const c=$('dpC').value.trim(),n=$('dpN').value.trim();
+  if(!c||!n)return toast('กรุณากรอกรหัสและชื่อหน่วยงาน');
+  if(S.depts.some(d=>d.c===c))return toast('รหัสหน่วยงานนี้มีอยู่แล้ว');
+  const{error}=await sbClient.from('departments').insert({code:c,name:n});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  $('dpC').value='';$('dpN').value='';await fetchAll();renderAll();toast('เพิ่มหน่วยงานเรียบร้อย');
+}
+async function delDept(c){
+  if(S.reqs.some(r=>r.depCode===c))return toast('ไม่สามารถลบได้ — มีประวัติการเบิกจ่าย');
+  const{error}=await sbClient.from('departments').delete().eq('code',c);
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('ลบหน่วยงานเรียบร้อย');
+}
+function rDept(){
+  $('dpT').innerHTML=S.depts.map(d=>{const rs=S.reqs.filter(r=>r.dep===d.n),is=rs.filter(r=>r.status===ST.I);
+    return `<tr><td><b>${d.c}</b></td><td>${d.n}</td><td class="r">${N(rs.length)}</td><td class="r">${N(is.length)}</td>
+     <td class="r"><b>${M(is.reduce((s,r)=>s+r.total,0))}</b></td>
+     <td class="c"><button class="bx" onclick="delDept('${d.c}')">ลบ</button></td></tr>`;}).join('');
+}
+
+/* ============ 15b. ACCOUNT SETTINGS & USER MANAGEMENT ============ */
+function rSettings(){
+  if(!curUser)return;
+  $('acUsername').textContent=curUser.username;
+  $('acUsername2').textContent=curUser.username;
+  $('acRole').textContent=ROLE_LABEL[curUser.role]||curUser.role;
+  $('userMgmtCard').classList.toggle('hide',curUser.role!=='all');
+  if(curUser.role==='all'){
+    $('userT').innerHTML=S.users.map(u=>`<tr><td><b>${u.username}</b></td><td>${u.full_name}</td>
+      <td class="c"><span class="pill p-ok">${ROLE_LABEL[u.role]||u.role}</span></td>
+      <td><select id="ur_${u.id}"><option value="viewer" ${u.role==='viewer'?'selected':''}>ผู้ชม (อ่านอย่างเดียว)</option>
+        <option value="req" ${u.role==='req'?'selected':''}>ผู้เบิก</option>
+        <option value="wh" ${u.role==='wh'?'selected':''}>เจ้าหน้าที่คลัง</option>
+        <option value="pur" ${u.role==='pur'?'selected':''}>เจ้าหน้าที่จัดซื้อ</option>
+        <option value="mgr" ${u.role==='mgr'?'selected':''}>ผู้บริหาร</option>
+        <option value="all" ${u.role==='all'?'selected':''}>ผู้ดูแลระบบ (ทุกสิทธิ์)</option></select></td>
+      <td class="c"><button class="b1" onclick="saveUserRole('${u.id}')" ${u.id===curUser.id?'disabled title="แก้สิทธิ์ตัวเองไม่ได้"':''}>บันทึก</button></td></tr>`).join('');
+  }
+}
+async function saveUserRole(id){
+  const role=$('ur_'+id).value;
+  const{error}=await sbClient.rpc('fn_admin_set_role',{p_user_id:id,p_role:role});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('ปรับสิทธิ์ผู้ใช้งานเรียบร้อย');
+}
+async function changeEmail(){
+  const email=$('acEmail').value.trim();
+  if(!email)return toast('กรุณาระบุอีเมลใหม่');
+  $('acEmailBtn').disabled=true;$('acEmailOk').classList.add('hide');
+  const{error}=await sbClient.auth.updateUser({email});
+  $('acEmailBtn').disabled=false;
+  if(error)return toast('ผิดพลาด: '+error.message);
+  $('acEmail').value='';$('acEmailOk').classList.remove('hide');
+  toast('ส่งลิงก์ยืนยันไปที่อีเมลใหม่แล้ว — กรุณากดยืนยันในอีเมล');
+}
+async function changePassword(){
+  const p=$('acPass').value,p2=$('acPass2').value;
+  $('acPassOk').classList.add('hide');
+  if(!p||p.length<6)return $('acPassErr').textContent='รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+  if(p!==p2)return $('acPassErr').textContent='รหัสผ่านสองช่องไม่ตรงกัน กรุณาพิมพ์ให้เหมือนกัน';
+  $('acPassErr').textContent='';$('acPassBtn').disabled=true;
+  const{error}=await sbClient.auth.updateUser({password:p});
+  $('acPassBtn').disabled=false;
+  if(error)return $('acPassErr').textContent='ผิดพลาด: '+error.message;
+  $('acPass').value='';$('acPass2').value='';$('acPassOk').classList.remove('hide');
+  toast('เปลี่ยนรหัสผ่านเรียบร้อย — ใช้รหัสใหม่ได้ทันที');
+}
+
+/* ============ 16. EXPORT ============ */
+function exportCSV(){
+  const h=['วันที่-เวลา','เอกสาร','ประเภท','รหัสวัสดุ','ชื่อวัสดุ','จำนวน','คงเหลือ','อ้างอิง','ผู้ทำรายการ'];
+  const rows=lgRows().map(t=>[t.ts,t.doc,t.type,t.code,t.name,t.qty,t.bal,t.ref,t.by]);
+  const csv='\uFEFF'+[h,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='PTW_StockMovement_'+today()+'.csv';a.click();toast('ส่งออกไฟล์ CSV เรียบร้อย');
+}
+
+/* ============ 17. BOOTSTRAP ============ */
+function renderAll(){
+  fillSel();
+  const b1=S.reqs.filter(r=>r.status===ST.P).length,b2=S.reqs.filter(r=>r.status===ST.A).length;
+  $('bg1').textContent=b1||'';$('bg1').style.display=b1?'':'none';
+  $('bg2').textContent=b2||'';$('bg2').style.display=b2?'':'none';
+  rDash();rRqCart();rTrack();rApv();rIss();rRcCart();rRcH();rProd();rLg();rKpi();rFlow();rDept();rSettings();
+}
+function initForms(){
+  $('rqDate').value=today();$('rcDate').value=today();$('kM').value=ym(today());
+  $('qrimg').src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(location.href+'#req');
+}
+/* ============ 18. LOGIN (Supabase Auth) ============ */
+function fillLogin(u,p){$('loU').value=u;$('loP').value=p;$('loErr').textContent='';}
+function showSignup(){$('loPane').classList.add('hide');$('suPane').classList.remove('hide');$('loSubTxt').textContent='สมัครสมาชิกใหม่ — จะได้สิทธิ์ผู้ชมก่อน รอผู้ดูแลระบบเลื่อนสิทธิ์ให้ภายหลัง';}
+function showLogin(){$('suPane').classList.add('hide');$('loPane').classList.remove('hide');$('loSubTxt').textContent='เข้าสู่ระบบเพื่อใช้งาน — ระบบล็อกอินฟรี ทำงานในเบราว์เซอร์ ไม่มีค่าใช้จ่าย';}
+async function doSignup(){
+  const name=$('suName').value.trim(),email=$('suEmail').value.trim(),pass=$('suPass').value;
+  $('suErr').textContent='';
+  if(!name)return $('suErr').textContent='กรุณาระบุชื่อ-นามสกุล';
+  if(!email)return $('suErr').textContent='กรุณาระบุอีเมล';
+  if(!pass||pass.length<6)return $('suErr').textContent='รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+  const{data,error}=await sbClient.auth.signUp({email,password:pass,options:{data:{full_name:name,username:email.split('@')[0]}}});
+  if(error){$('suErr').textContent=error.message;return;}
+  if(data.session){await enterApp(data.user);}
+  else{showLogin();toast('สมัครสมาชิกสำเร็จ — กรุณาตรวจสอบอีเมลเพื่อยืนยันตัวตนก่อนเข้าสู่ระบบ');}
+}
+async function doLogin(){
+  const u=$('loU').value.trim(),p=$('loP').value;
+  if(!u||!p)return;
+  $('loErr').textContent='';
+  const email=u.includes('@')?u:u+AUTH_DOMAIN;
+  const{data,error}=await sbClient.auth.signInWithPassword({email,password:p});
+  if(error){$('loErr').textContent='ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';return;}
+  await enterApp(data.user);
+}
+async function doLogout(){await sbClient.auth.signOut();location.reload();}
+async function enterApp(authUser){
+  const{data:prof,error}=await sbClient.from('profiles').select('*').eq('id',authUser.id).single();
+  if(error||!prof){$('loErr').textContent='ไม่พบข้อมูลผู้ใช้งานนี้ในระบบ';await sbClient.auth.signOut();return;}
+  curUser={id:authUser.id,username:prof.username,full_name:prof.full_name,role:prof.role};
+  $('loginScreen').classList.add('off');
+  $('loName').textContent=curUser.full_name+' ('+curUser.username+')';
+  $('roleAdminBox').style.display=curUser.role==='all'?'':'none';
+  $('role').value=curUser.role;applyRoleUI(curUser.role);
+  await fetchAll();initForms();renderAll();
+  if(location.hash==='#req'&&(curUser.role==='all'||curUser.role==='req'))go('req');
+}
+async function boot(){
+  const{data:{session}}=await sbClient.auth.getSession();
+  if(session){await enterApp(session.user);}else{$('loginScreen').classList.remove('off');}
+}
+boot();
+</script>
+</body>
+</html>
