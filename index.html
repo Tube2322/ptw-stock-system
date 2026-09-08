@@ -129,11 +129,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <div class="fld"><label>รหัสผ่าน</label><input id="loP" type="password" placeholder="รหัสผ่าน" autocomplete="off"></div>
       <div class="loginerr" id="loErr"></div>
       <button class="b1" onclick="doLogin()">เข้าสู่ระบบ</button>
-      <div class="demoacc">
-        <b>บัญชีเริ่มต้นระบบ (คลิกเพื่อกรอกอัตโนมัติ)</b>
-        <div onclick="fillLogin('admin','admin123')">admin / admin123 — ผู้ดูแลระบบ (ทุกสิทธิ์)</div>
-      </div>
-      <div class="demoacc" style="border-top:none;padding-top:6px">ยังไม่มีบัญชี? <span style="color:var(--acc);cursor:pointer;text-decoration:underline" onclick="showSignup()">สมัครสมาชิกใหม่</span> (จะได้สิทธิ์ผู้ชมก่อน รอผู้ดูแลระบบเลื่อนสิทธิ์ให้)</div>
+      <div class="demoacc" style="border-top:none;padding-top:14px">ยังไม่มีบัญชี? <span style="color:var(--acc);cursor:pointer;text-decoration:underline" onclick="showSignup()">สมัครสมาชิกใหม่</span> (จะได้สิทธิ์ผู้ชมก่อน รอผู้ดูแลระบบเลื่อนสิทธิ์ให้)</div>
     </div>
 
     <div id="suPane" class="hide">
@@ -923,7 +919,6 @@ function initForms(){
   $('qrimg').src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(location.href+'#req');
 }
 /* ============ 18. LOGIN (Supabase Auth) ============ */
-function fillLogin(u,p){$('loU').value=u;$('loP').value=p;$('loErr').textContent='';}
 function showSignup(){$('loPane').classList.add('hide');$('suPane').classList.remove('hide');$('loSubTxt').textContent='สมัครสมาชิกใหม่ — จะได้สิทธิ์ผู้ชมก่อน รอผู้ดูแลระบบเลื่อนสิทธิ์ให้ภายหลัง';}
 function showLogin(){$('suPane').classList.add('hide');$('loPane').classList.remove('hide');$('loSubTxt').textContent='เข้าสู่ระบบเพื่อใช้งาน — ระบบล็อกอินฟรี ทำงานในเบราว์เซอร์ ไม่มีค่าใช้จ่าย';}
 async function doSignup(){
