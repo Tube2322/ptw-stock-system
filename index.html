@@ -416,6 +416,7 @@ const dt=s=>new Date(s).toLocaleString('th-TH',{day:'2-digit',month:'short',year
 const mLabel=m=>{const[y,mo]=m.split('-');return new Date(+y,+mo-1,1).toLocaleDateString('th-TH',{month:'short',year:'2-digit'});};
 const P=c=>S.products.find(p=>p.code===c);
 const R=n=>S.reqs.find(r=>r.no===n);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3000);}
 function stat(p){if(p.cur<=0)return['p-zero','หมดสต็อก'];if(p.cur<=p.min)return['p-low','ต่ำกว่า Min'];return['p-ok','ปกติ'];}
 
@@ -523,11 +524,11 @@ function rDash(){
 
   const low=S.products.filter(p=>p.act==1&&p.cur<=p.min);
   $('lowT').innerHTML=low.length?low.map(p=>{const[c,t]=stat(p);
-    return `<tr><td><b>${p.code}</b></td><td>${p.name}</td><td class="r"><b>${N(p.cur)}</b></td><td class="r">${N(p.min)}</td><td class="c"><span class="pill ${c}">${t}</span></td></tr>`;}).join('')
+    return `<tr><td><b>${esc(p.code)}</b></td><td>${esc(p.name)}</td><td class="r"><b>${N(p.cur)}</b></td><td class="r">${N(p.min)}</td><td class="c"><span class="pill ${c}">${t}</span></td></tr>`;}).join('')
     :'<tr><td colspan="5" class="empty">✓ ทุกรายการอยู่ในระดับปกติ</td></tr>';
   const pend=S.reqs.filter(r=>r.status===ST.P||r.status===ST.A);
   $('pendT').innerHTML=pend.length?pend.map(r=>
-    `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.dep}</td><td class="c">${r.items.length}</td>
+    `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td class="c">${r.items.length}</td>
      <td class="c"><span class="pill ${PC[r.status]}">${r.status}</span></td></tr>`).join('')
     :'<tr><td colspan="5" class="empty">ไม่มีใบเบิกค้างดำเนินการ</td></tr>';
 
@@ -536,7 +537,7 @@ function rDash(){
   const tot=Object.values(byDep).reduce((s,x)=>s+x.v,0)||1;
   const ent=Object.entries(byDep).sort((a,b)=>b[1].v-a[1].v);
   $('depCT').innerHTML=ent.length?ent.map(([d,x])=>
-    `<tr><td>${d}</td><td class="r">${N(x.n)}</td><td class="r"><b>${M(x.v)}</b></td>
+    `<tr><td>${esc(d)}</td><td class="r">${N(x.n)}</td><td class="r"><b>${M(x.v)}</b></td>
      <td><div class="bar"><i style="width:${x.v/tot*100}%;background:var(--pp)"></i></div>
      <small style="color:var(--mt)">${(x.v/tot*100).toFixed(1)}%</small></td></tr>`).join('')
     :'<tr><td colspan="4" class="empty">ยังไม่มีข้อมูลการจ่ายออกในช่วงที่เลือก</td></tr>';
@@ -544,9 +545,9 @@ function rDash(){
 
 /* ============ 7. REQUISITION (ผู้เบิก) ============ */
 function fillSel(){
-  const opt=S.products.filter(p=>p.act==1).map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('');
+  const opt=S.products.filter(p=>p.act==1).map(p=>`<option value="${esc(p.code)}">${esc(p.code)} — ${esc(p.name)}</option>`).join('');
   ['rqP','rcP'].forEach(i=>{const v=$(i).value;$(i).innerHTML=opt;if(v)$(i).value=v;});
-  const dv=$('rqDep').value;$('rqDep').innerHTML=S.depts.map(d=>`<option value="${d.c}">${d.n}</option>`).join('');if(dv)$('rqDep').value=dv;
+  const dv=$('rqDep').value;$('rqDep').innerHTML=S.depts.map(d=>`<option value="${esc(d.c)}">${esc(d.n)}</option>`).join('');if(dv)$('rqDep').value=dv;
   rqBal();rcPr();
 }
 function rqBal(){const p=P($('rqP').value);$('rqAvl').value=p?N(p.cur)+' '+p.unit:'';}
@@ -583,7 +584,7 @@ function rTrack(){
   const rows=S.reqs.filter(r=>(r.no+r.by+r.dep).toLowerCase().includes(q)).filter(r=>!s||r.status===s);
   $('tkT').innerHTML=rows.length?rows.map(r=>{
     const rq=r.items.reduce((a,i)=>a+i.rq,0),iq=r.items.reduce((a,i)=>a+i.iq,0);
-    return `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.dep}</td><td>${r.by}</td>
+    return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td>${esc(r.by)}</td>
      <td class="c">${r.items.length}</td><td class="r">${N(rq)}</td><td class="r">${r.status===ST.I?N(iq):'—'}</td>
      <td class="r"><b>${r.total?M(r.total):'—'}</b></td>
      <td class="c"><span class="pill ${PC[r.status]}">${r.status}</span></td>
@@ -597,9 +598,9 @@ function viewReq(no){
   $('mTtl').textContent='รายละเอียดใบเบิก '+no;
   $('mBody').innerHTML=`
    <div class="grid g2" style="margin-bottom:12px;font-size:12.8px">
-    <div><b>วันที่ขอ:</b> ${dd(r.date)}</div><div><b>หน่วยงาน:</b> ${r.dep}</div>
-    <div><b>ผู้ขอเบิก:</b> ${r.by}</div><div><b>สถานะ:</b> <span class="pill ${PC[r.status]}">${r.status}</span></div>
-    <div><b>ผู้อนุมัติ:</b> ${r.apvBy||'—'}</div><div><b>วันที่จ่าย:</b> ${r.issDate?dd(r.issDate):'—'}</div></div>
+    <div><b>วันที่ขอ:</b> ${dd(r.date)}</div><div><b>หน่วยงาน:</b> ${esc(r.dep)}</div>
+    <div><b>ผู้ขอเบิก:</b> ${esc(r.by)}</div><div><b>สถานะ:</b> <span class="pill ${PC[r.status]}">${r.status}</span></div>
+    <div><b>ผู้อนุมัติ:</b> ${esc(r.apvBy)||'—'}</div><div><b>วันที่จ่าย:</b> ${r.issDate?dd(r.issDate):'—'}</div></div>
    ${canEdit?'<p style="margin-bottom:8px;font-size:12px;color:var(--mt)">สิทธิ์ผู้ดูแลระบบ: กด "แก้ไข" ที่รายการซึ่งกรอกจำนวนผิด ระบบจะปรับสต็อกให้อัตโนมัติตามส่วนต่าง</p>':''}
    <div class="tw"><table><thead><tr><th>รหัส</th><th>วัสดุ</th><th class="r">ขอเบิก</th><th class="r">จ่ายจริง</th><th class="r">ราคา/หน่วย</th><th class="r">รวม</th>${canEdit?'<th class="c">จัดการ</th>':''}</tr></thead>
    <tbody>${r.items.map(i=>{
@@ -613,9 +614,9 @@ function viewReq(no){
        qtyCell=`<b>${r.status===ST.I?N(i.iq):'—'}</b>`;
        if(canEdit)actionCell=`<td class="c"><button class="b2" onclick="editReqCode='${i.code}';viewReq('${no}')">✎ แก้ไข</button></td>`;
      }
-     return `<tr><td>${i.code}</td><td>${i.name}</td><td class="r">${N(i.rq)}</td>
+     return `<tr><td>${esc(i.code)}</td><td>${esc(i.name)}</td><td class="r">${N(i.rq)}</td>
       <td class="r">${qtyCell}</td><td class="r">${M(i.price)}</td><td class="r">${i.total?M(i.total):'—'}</td>${actionCell}</tr>`;}).join('')}</tbody></table></div>
-   ${r.rm?`<p style="margin-top:11px;font-size:12.5px"><b>หมายเหตุ:</b> ${r.rm}</p>`:''}`;
+   ${r.rm?`<p style="margin-top:11px;font-size:12.5px"><b>หมายเหตุ:</b> ${esc(r.rm)}</p>`:''}`;
   $('mFoot').innerHTML='<button class="b2" onclick="editReqCode=null;closeM()">ปิด</button>';
   $('mask').classList.add('on');
 }
@@ -644,7 +645,7 @@ function rApv(){
   $('apvT').innerHTML=rows.length?rows.map(r=>{
     const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
     const short=r.items.filter(i=>{const p=P(i.code);return !p||p.cur<i.rq;});
-    return `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.dep}</td><td>${r.by}</td>
+    return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td>${esc(r.by)}</td>
      <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td>
      <td class="c">${short.length?`<span class="pill p-low">ไม่พอ ${short.length} รายการ</span>`:'<span class="pill p-in">เพียงพอ</span>'}</td>
      <td class="c"><button class="b2" onclick="viewReq('${r.no}')">ดู</button>
@@ -666,16 +667,16 @@ function rIss(){
   const rows=S.reqs.filter(r=>r.status===ST.A);
   $('issT').innerHTML=rows.length?rows.map(r=>{
     const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
-    return `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.dep}</td><td>${r.by}</td>
-     <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td><td>${r.apvBy||'—'}</td>
+    return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td>${esc(r.by)}</td>
+     <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td><td>${esc(r.apvBy)||'—'}</td>
      <td class="c"><button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button></td></tr>`;}).join('')
    :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอจ่ายออก</td></tr>';
   const h=S.reqs.filter(r=>r.status===ST.I).slice(0,12);
   $('issHT').innerHTML=h.length?h.map(r=>{
     const rq=r.items.reduce((a,i)=>a+i.rq,0),iq=r.items.reduce((a,i)=>a+i.iq,0);
     const fr=rq?iq/rq*100:0;
-    return `<tr><td><b>${r.no}</b></td><td>${dd(r.issDate)}</td><td>${r.dep}</td><td class="r"><b>${M(r.total)}</b></td>
-     <td class="c"><span class="pill ${fr>=100?'p-in':'p-low'}">${fr.toFixed(0)}%</span></td><td>${r.issBy||'—'}</td></tr>`;}).join('')
+    return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.issDate)}</td><td>${esc(r.dep)}</td><td class="r"><b>${M(r.total)}</b></td>
+     <td class="c"><span class="pill ${fr>=100?'p-in':'p-low'}">${fr.toFixed(0)}%</span></td><td>${esc(r.issBy)||'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="6" class="empty">ยังไม่มีประวัติการจ่ายออก</td></tr>';
 }
 function openIss(no){
@@ -683,13 +684,13 @@ function openIss(no){
   $('mTtl').textContent='จ่ายออกตามจำนวนจริง — '+no;
   $('mBody').innerHTML=`
    <div class="grid g3" style="margin-bottom:12px">
-    <div><label>หน่วยงาน</label><input value="${r.dep}" readonly style="background:#f4f7fb"></div>
-    <div><label>ผู้ขอเบิก</label><input value="${r.by}" readonly style="background:#f4f7fb"></div>
+    <div><label>หน่วยงาน</label><input value="${esc(r.dep)}" readonly style="background:#f4f7fb"></div>
+    <div><label>ผู้ขอเบิก</label><input value="${esc(r.by)}" readonly style="background:#f4f7fb"></div>
     <div><label>วันที่จ่าย *</label><input type="date" id="isD" value="${today()}"></div>
-    <div><label>ผู้จ่ายวัสดุ</label><input id="isBy" placeholder="ชื่อเจ้าหน้าที่คลัง" value="${curUser.full_name}"></div></div>
+    <div><label>ผู้จ่ายวัสดุ</label><input id="isBy" placeholder="ชื่อเจ้าหน้าที่คลัง" value="${esc(curUser.full_name)}"></div></div>
    <div class="tw"><table><thead><tr><th>รหัส</th><th>วัสดุ</th><th class="r">คงเหลือ</th><th class="r">ขอเบิก</th><th style="width:105px">จ่ายจริง</th><th class="r">มูลค่า</th></tr></thead>
    <tbody>${r.items.map((i,x)=>{const p=P(i.code),mx=Math.min(i.rq,p?p.cur:0);
-     return `<tr><td>${i.code}</td><td>${i.name} <small style="color:var(--mt)">(${i.unit})</small></td>
+     return `<tr><td>${esc(i.code)}</td><td>${esc(i.name)} <small style="color:var(--mt)">(${esc(i.unit)})</small></td>
       <td class="r ${p&&p.cur<i.rq?'':''}"><b style="color:${p&&p.cur<i.rq?'var(--rd)':'var(--tx)'}">${N(p?p.cur:0)}</b></td>
       <td class="r">${N(i.rq)}</td>
       <td><input type="number" id="iq${x}" min="0" max="${p?p.cur:0}" value="${mx}" oninput="calcIss()" style="text-align:right"></td>
@@ -726,10 +727,10 @@ function addRc(){
 }
 function rRcCart(){
   $('rcT').innerHTML=rcCart.length?rcCart.map((r,i)=>{const pend=Math.max(0,r.orderQty-r.qty);
-   return `<tr><td>${i+1}</td><td><b>${r.code}</b></td><td>${r.name}</td><td class="r">${N(r.orderQty)}</td>
+   return `<tr><td>${i+1}</td><td><b>${esc(r.code)}</b></td><td>${esc(r.name)}</td><td class="r">${N(r.orderQty)}</td>
     <td class="r"><b style="color:var(--gr)">${N(r.qty)}</b></td>
     <td class="r">${pend?'<span class="pill p-low">'+N(pend)+'</span>':'—'}</td>
-    <td>${r.unit}</td><td class="r">${M(r.price)}</td><td class="r"><b>${M(r.qty*r.price)}</b></td>
+    <td>${esc(r.unit)}</td><td class="r">${M(r.price)}</td><td class="r"><b>${M(r.qty*r.price)}</b></td>
     <td class="c"><button class="bx" onclick="rcCart.splice(${i},1);rRcCart()">✕</button></td></tr>`;}).join('')
    :'<tr><td colspan="10" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่รับเข้าคลัง</td></tr>';
   $('rcSum').textContent=M(rcCart.reduce((s,r)=>s+r.qty*r.price,0));
@@ -747,7 +748,7 @@ async function saveRc(){
 function clrRc(){rcCart=[];$('rcSup').value='';$('rcRm').value='';$('rcBy').value='';$('rcDate').value=today();rRcCart();}
 function rRcH(){
   $('rcHT').innerHTML=S.receives.length?S.receives.slice(0,25).map(r=>
-   `<tr><td><b>${r.no}</b></td><td>${dd(r.date)}</td><td>${r.sup}</td><td>${r.code}</td><td>${r.name}</td>
+   `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.sup)}</td><td>${esc(r.code)}</td><td>${esc(r.name)}</td>
     <td class="r">${N(r.orderQty)}</td><td class="r">${N(r.qty)}</td>
     <td class="r">${r.pending?'<span class="pill p-low">'+N(r.pending)+'</span>':'—'}</td>
     <td class="r">${M(r.price)}</td><td class="r"><b>${M(r.total)}</b></td></tr>`).join('')
@@ -763,7 +764,7 @@ function rProd(){
     const[c,t]=stat(p),base=Math.max(p.open,p.cur,p.min*2,1),pct=Math.min(100,p.cur/base*100);
     const col=c==='p-zero'?'var(--rd)':c==='p-low'?'var(--or)':'var(--gr)';
     const reorderFlag=p.reorder>0&&p.cur<=p.reorder?'<br><span class="pill p-low" style="margin-top:2px">ควรสั่งซื้อ</span>':'';
-    return `<tr><td><b>${p.code}</b></td><td>${p.name}</td><td>${p.unit}</td><td class="r">${N(p.open)}</td>
+    return `<tr><td><b>${esc(p.code)}</b></td><td>${esc(p.name)}</td><td>${esc(p.unit)}</td><td class="r">${N(p.open)}</td>
      <td class="r"><b style="font-size:13.5px">${N(p.cur)}</b></td>
      <td><div class="bar"><i style="width:${pct}%;background:${col}"></i></div></td>
      <td class="r">${N(p.min)}</td><td class="r">${p.reorder>0?N(p.reorder):'—'}</td><td class="r">${M(p.price)}</td><td class="r"><b>${M(p.cur*p.price)}</b></td>
@@ -776,9 +777,9 @@ function openPd(id){
   $('mTtl').textContent=p?'แก้ไขข้อมูลวัสดุ':'เพิ่มวัสดุใหม่';
   $('mBody').innerHTML=`<input type="hidden" id="fId" value="${p?p.id:''}">
    <div class="grid g2">
-    <div><label>ProductCode *</label><input id="fC" value="${p?p.code:''}"></div>
-    <div><label>ProductName *</label><input id="fN" value="${p?p.name:''}"></div>
-    <div><label>Unit (หน่วยนับ)</label><input id="fU" value="${p?p.unit:''}" placeholder="ชิ้น / กล่อง / ชุด"></div>
+    <div><label>ProductCode *</label><input id="fC" value="${esc(p?p.code:'')}"></div>
+    <div><label>ProductName *</label><input id="fN" value="${esc(p?p.name:'')}"></div>
+    <div><label>Unit (หน่วยนับ)</label><input id="fU" value="${esc(p?p.unit:'')}" placeholder="ชิ้น / กล่อง / ชุด"></div>
     <div><label>UnitPrice (ราคา/หน่วย)</label><input type="number" step="0.01" id="fP" value="${p?p.price:0}"></div>
     <div><label>OpeningStock (ยอดยกมา)</label><input type="number" id="fO" value="${p?p.open:0}"></div>
     <div><label>MinStock (จุดแจ้งเตือน)</label><input type="number" id="fM" value="${p?p.min:0}"></div>
@@ -823,11 +824,11 @@ function lgRows(){
 function rLg(){
   const r=lgRows();
   $('lgT').innerHTML=r.length?r.slice(0,300).map(t=>
-   `<tr><td>${dt(t.ts)}</td><td><b>${t.doc}</b></td><td class="c"><span class="pill ${t.type==='IN'?'p-in':'p-out'}">${t.type}</span></td>
-    <td>${t.code}</td><td>${t.name}</td>
+   `<tr><td>${dt(t.ts)}</td><td><b>${esc(t.doc)}</b></td><td class="c"><span class="pill ${t.type==='IN'?'p-in':'p-out'}">${t.type}</span></td>
+    <td>${esc(t.code)}</td><td>${esc(t.name)}</td>
     <td class="r" style="color:var(--gr);font-weight:700">${t.type==='IN'?'+'+N(t.qty):'—'}</td>
     <td class="r" style="color:var(--rd);font-weight:700">${t.type==='OUT'?'−'+N(t.qty):'—'}</td>
-    <td class="r"><b>${N(t.bal)}</b></td><td>${t.ref}</td><td>${t.by}</td></tr>`).join('')
+    <td class="r"><b>${N(t.bal)}</b></td><td>${esc(t.ref)}</td><td>${esc(t.by)}</td></tr>`).join('')
    :'<tr><td colspan="10" class="empty">ไม่พบรายการตามเงื่อนไข</td></tr>';
 }
 
@@ -859,7 +860,7 @@ function rKpi(){
 /* ============ 15. FLOW LOG & DEPT ============ */
 function rFlow(){
   $('flT').innerHTML=S.flow.length?S.flow.slice(0,80).map(f=>
-   `<div><span>${dt(f.ts)}</span><b style="color:var(--acc);white-space:nowrap">${f.n}</b><span style="color:var(--tx)">${f.msg}</span></div>`).join('')
+   `<div><span>${dt(f.ts)}</span><b style="color:var(--acc);white-space:nowrap">${esc(f.n)}</b><span style="color:var(--tx)">${esc(f.msg)}</span></div>`).join('')
    :'<div class="empty">ยังไม่มีบันทึกการทำงาน</div>';
 }
 async function addDept(){
@@ -878,7 +879,7 @@ async function delDept(c){
 }
 function rDept(){
   $('dpT').innerHTML=S.depts.map(d=>{const rs=S.reqs.filter(r=>r.dep===d.n),is=rs.filter(r=>r.status===ST.I);
-    return `<tr><td><b>${d.c}</b></td><td>${d.n}</td><td class="r">${N(rs.length)}</td><td class="r">${N(is.length)}</td>
+    return `<tr><td><b>${esc(d.c)}</b></td><td>${esc(d.n)}</td><td class="r">${N(rs.length)}</td><td class="r">${N(is.length)}</td>
      <td class="r"><b>${M(is.reduce((s,r)=>s+r.total,0))}</b></td>
      <td class="c"><button class="bx" onclick="delDept('${d.c}')">ลบ</button></td></tr>`;}).join('');
 }
@@ -892,7 +893,7 @@ function rSettings(){
   $('userMgmtCard').classList.toggle('hide',curUser.role!=='all');
   $('resetDataCard').classList.toggle('hide',curUser.role!=='all');
   if(curUser.role==='all'){
-    $('userT').innerHTML=S.users.map(u=>`<tr><td><b>${u.username}</b></td><td>${u.full_name}</td>
+    $('userT').innerHTML=S.users.map(u=>`<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.full_name)}</td>
       <td class="c"><span class="pill p-ok">${ROLE_LABEL[u.role]||u.role}</span></td>
       <td><select id="ur_${u.id}"><option value="viewer" ${u.role==='viewer'?'selected':''}>ผู้ชม (อ่านอย่างเดียว)</option>
         <option value="req" ${u.role==='req'?'selected':''}>ผู้เบิก</option>
