@@ -592,18 +592,29 @@ function rTrack(){
 }
 function viewReq(no){
   const r=R(no);curReq=r;
+  const canEdit=curUser.role==='all'&&r.status===ST.I;
   $('mTtl').textContent='รายละเอียดใบเบิก '+no;
   $('mBody').innerHTML=`
    <div class="grid g2" style="margin-bottom:12px;font-size:12.8px">
     <div><b>วันที่ขอ:</b> ${dd(r.date)}</div><div><b>หน่วยงาน:</b> ${r.dep}</div>
     <div><b>ผู้ขอเบิก:</b> ${r.by}</div><div><b>สถานะ:</b> <span class="pill ${PC[r.status]}">${r.status}</span></div>
     <div><b>ผู้อนุมัติ:</b> ${r.apvBy||'—'}</div><div><b>วันที่จ่าย:</b> ${r.issDate?dd(r.issDate):'—'}</div></div>
-   <div class="tw"><table><thead><tr><th>รหัส</th><th>วัสดุ</th><th class="r">ขอเบิก</th><th class="r">จ่ายจริง</th><th class="r">ราคา/หน่วย</th><th class="r">รวม</th></tr></thead>
-   <tbody>${r.items.map(i=>`<tr><td>${i.code}</td><td>${i.name}</td><td class="r">${N(i.rq)}</td>
-    <td class="r"><b>${r.status===ST.I?N(i.iq):'—'}</b></td><td class="r">${M(i.price)}</td><td class="r">${i.total?M(i.total):'—'}</td></tr>`).join('')}</tbody></table></div>
+   ${canEdit?'<p style="margin-bottom:8px;font-size:12px;color:var(--mt)">สิทธิ์ผู้ดูแลระบบ: แก้ไขจำนวนแล้วกด ✓ เพื่อปรับสต็อกอัตโนมัติ</p>':''}
+   <div class="tw"><table><thead><tr><th>รหัส</th><th>วัสดุ</th><th class="r">ขอเบิก</th><th class="r">จ่ายจริง</th><th class="r">ราคา/หน่วย</th><th class="r">รวม</th>${canEdit?'<th class="c">แก้ไข</th>':''}</tr></thead>
+   <tbody>${r.items.map(i=>{const eid='eq_'+i.code.replace(/[^a-zA-Z0-9]/g,'_');return `<tr><td>${i.code}</td><td>${i.name}</td><td class="r">${N(i.rq)}</td>
+    <td class="r">${canEdit?`<input type="number" id="${eid}" value="${i.iq}" min="0" style="width:88px;text-align:right">`:`<b>${r.status===ST.I?N(i.iq):'—'}</b>`}</td><td class="r">${M(i.price)}</td><td class="r">${i.total?M(i.total):'—'}</td>
+    ${canEdit?`<td class="c"><button class="b1" onclick="adminEditQty('${no}','${i.code}','${eid}')">✓</button></td>`:''}</tr>`;}).join('')}</tbody></table></div>
    ${r.rm?`<p style="margin-top:11px;font-size:12.5px"><b>หมายเหตุ:</b> ${r.rm}</p>`:''}`;
   $('mFoot').innerHTML='<button class="b2" onclick="closeM()">ปิด</button>';
   $('mask').classList.add('on');
+}
+async function adminEditQty(no,code,eid){
+  const v=+$(eid).value;
+  if(isNaN(v)||v<0)return toast('กรุณาระบุจำนวนให้ถูกต้อง');
+  const{error}=await sbClient.rpc('fn_admin_edit_requisition_item',{p_req_no:no,p_code:code,p_new_qty:v,p_by:curUser.full_name});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('แก้ไขจำนวนเบิก '+code+' ในใบเบิก '+no+' เรียบร้อย');
+  viewReq(no);
 }
 const closeM=()=>$('mask').classList.remove('on');
 
