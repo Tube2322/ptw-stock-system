@@ -157,6 +157,8 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
     <a data-p="req" data-r="all,req"><i>✎</i><span>ทำใบเบิก</span></a>
     <a data-p="track" data-r="all,req,wh"><i>◷</i><span>ติดตามสถานะ</span></a>
     <div class="ngrp" data-r="all,wh,pur,viewer">งานคลังสินค้า</div>
+    <a data-p="apv" data-r="all,wh"><i>☑</i><span>ตรวจสอบใบเบิก</span><b id="bg1"></b></a>
+    <a data-p="iss" data-r="all,wh"><i>▲</i><span>จ่ายออก</span><b id="bg2"></b></a>
     <a data-p="rcv" data-r="all,wh,pur"><i>▼</i><span>รับเข้า</span></a>
     <a data-p="prod" data-r="all,wh,pur,mgr"><i>▣</i><span>สินค้าคงคลัง</span></a>
     <a data-p="lg" data-r="all,wh,pur,mgr,viewer"><i>≡</i><span>ประวัติเคลื่อนไหว</span></a>
@@ -244,6 +246,20 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <div style="width:160px"><label>สถานะ</label><select id="sTk" onchange="rTrack()"><option value="">ทั้งหมด</option><option>รอตรวจสอบ</option><option>อนุมัติแล้ว</option><option>จ่ายแล้ว</option><option>ปฏิเสธ</option></select></div>
       </div>
       <div class="tw"><table><thead><tr><th>เลขที่ใบเบิก</th><th>วันที่ขอ</th><th>หน่วยงาน</th><th>ผู้ขอเบิก</th><th class="c">รายการ</th><th class="r">ขอเบิก</th><th class="r">จ่ายจริง</th><th class="r">มูลค่าจ่าย</th><th class="c">สถานะ</th><th class="c">ดู</th></tr></thead><tbody id="tkT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== ตรวจสอบใบเบิก ========== -->
+  <section class="page" id="p-apv">
+    <div class="card" style="border-top:3px solid var(--acc)"><h3>☑ ใบเบิกรอตรวจสอบและอนุมัติ</h3>
+      <div class="tw"><table><thead><tr><th>เลขที่</th><th>วันที่ขอ</th><th>หน่วยงาน</th><th>ผู้ขอเบิก</th><th class="c">รายการ</th><th class="r">มูลค่าประมาณ</th><th class="c">ความพร้อมของสต็อก</th><th class="c">ดำเนินการ</th></tr></thead><tbody id="apvT"></tbody></table></div></div>
+  </section>
+
+  <!-- ========== จ่ายออก ========== -->
+  <section class="page" id="p-iss">
+    <div class="card" style="border-top:3px solid var(--gr)"><h3>▲ ใบเบิกที่อนุมัติแล้ว — รอจ่ายออก</h3>
+      <div class="tw"><table><thead><tr><th>เลขที่</th><th>วันที่ขอ</th><th>หน่วยงาน</th><th>ผู้ขอเบิก</th><th class="c">รายการ</th><th class="r">มูลค่าประมาณ</th><th>ผู้อนุมัติ</th><th class="c">ดำเนินการ</th></tr></thead><tbody id="issT"></tbody></table></div></div>
+    <div class="card"><h3>ประวัติการจ่ายออกล่าสุด</h3>
+      <div class="tw"><table><thead><tr><th>เลขที่</th><th>วันที่จ่าย</th><th>หน่วยงาน</th><th class="r">มูลค่าจ่ายจริง</th><th class="c">Fill Rate</th><th>ผู้จ่าย</th></tr></thead><tbody id="issHT"></tbody></table></div></div>
   </section>
 
   <!-- ========== รับเข้า ========== -->
@@ -431,7 +447,8 @@ async function fetchAll(){
 async function refreshData(){await fetchAll();renderAll();toast('โหลดข้อมูลล่าสุดเรียบร้อย');}
 /* ============ 5. NAVIGATION & ROLE ============ */
 const TT={dash:['Dashboard','ภาพรวมและการวิเคราะห์ต้นทุนวัสดุ'],req:['ทำใบเบิก','บันทึกเบิกวัสดุ — ตัดสต็อกอัตโนมัติทันทีเมื่อบันทึก'],
- track:['ติดตามสถานะ','ตรวจสอบความคืบหน้าใบเบิก'],rcv:['รับเข้า','บันทึกการรับวัสดุจากการสั่งซื้อ'],
+ track:['ติดตามสถานะ','ตรวจสอบความคืบหน้าใบเบิก'],apv:['ตรวจสอบใบเบิก','ตรวจสอบรายการและอนุมัติการเบิก'],
+ iss:['จ่ายออก','จ่ายวัสดุตามจำนวนจริงและตัดสต็อก'],rcv:['รับเข้า','บันทึกการรับวัสดุจากการสั่งซื้อ'],
  prod:['สินค้าคงคลัง','Products — ยอดคงเหลือและมูลค่าคลัง'],lg:['ประวัติเคลื่อนไหว','Stock Movement Ledger'],
  kpi:['Monthly KPI','ตัวชี้วัดและต้นทุนต่อหน่วยบริการ'],flow:['Power Automate','บันทึกการทำงานอัตโนมัติ'],dept:['หน่วยงาน','Departments Master'],
  settings:['ตั้งค่าบัญชี','จัดการบัญชีของฉันและสิทธิ์การใช้งาน']};
@@ -617,6 +634,83 @@ async function adminEditQty(no,code,eid){
   viewReq(no);
 }
 const closeM=()=>$('mask').classList.remove('on');
+
+/* ============ 9. APPROVAL (คลัง) ============ */
+function rApv(){
+  const rows=S.reqs.filter(r=>r.status===ST.P);
+  $('apvT').innerHTML=rows.length?rows.map(r=>{
+    const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
+    const short=r.items.filter(i=>{const p=P(i.code);return !p||p.cur<i.rq;});
+    return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td>${esc(r.by)}</td>
+     <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td>
+     <td class="c">${short.length?`<span class="pill p-low">ไม่พอ ${short.length} รายการ</span>`:'<span class="pill p-in">เพียงพอ</span>'}</td>
+     <td class="c"><button class="b2" onclick="viewReq('${r.no}')">ดู</button>
+      <button class="b1" onclick="doApv('${r.no}')">อนุมัติ</button>
+      <button class="bx" onclick="doRej('${r.no}')">ปฏิเสธ</button></td></tr>`;}).join('')
+   :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอตรวจสอบ</td></tr>';
+}
+async function doApv(no){
+  const{error}=await sbClient.rpc('fn_approve_requisition',{p_no:no,p_by:curUser.full_name});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('อนุมัติใบเบิก '+no+' เรียบร้อย');}
+async function doRej(no){const rs=prompt('ระบุเหตุผลการปฏิเสธ:');if(rs===null)return;
+  const{error}=await sbClient.rpc('fn_reject_requisition',{p_no:no,p_reason:rs||'ไม่ระบุ'});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('ปฏิเสธใบเบิก '+no);}
+
+/* ============ 10. ISSUE (จ่ายออกตามจำนวนจริง) ============ */
+function rIss(){
+  const rows=S.reqs.filter(r=>r.status===ST.A);
+  $('issT').innerHTML=rows.length?rows.map(r=>{
+    const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
+    return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td>${esc(r.by)}</td>
+     <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td><td>${esc(r.apvBy)||'—'}</td>
+     <td class="c"><button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button></td></tr>`;}).join('')
+   :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอจ่ายออก</td></tr>';
+  const h=S.reqs.filter(r=>r.status===ST.I).slice(0,12);
+  $('issHT').innerHTML=h.length?h.map(r=>{
+    const rq=r.items.reduce((a,i)=>a+i.rq,0),iq=r.items.reduce((a,i)=>a+i.iq,0);
+    const fr=rq?iq/rq*100:0;
+    return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.issDate)}</td><td>${esc(r.dep)}</td><td class="r"><b>${M(r.total)}</b></td>
+     <td class="c"><span class="pill ${fr>=100?'p-in':'p-low'}">${fr.toFixed(0)}%</span></td><td>${esc(r.issBy)||'—'}</td></tr>`;}).join('')
+   :'<tr><td colspan="6" class="empty">ยังไม่มีประวัติการจ่ายออก</td></tr>';
+}
+function openIss(no){
+  const r=R(no);curReq=r;
+  $('mTtl').textContent='จ่ายออกตามจำนวนจริง — '+no;
+  $('mBody').innerHTML=`
+   <div class="grid g3" style="margin-bottom:12px">
+    <div><label>หน่วยงาน</label><input value="${esc(r.dep)}" readonly style="background:#f4f7fb"></div>
+    <div><label>ผู้ขอเบิก</label><input value="${esc(r.by)}" readonly style="background:#f4f7fb"></div>
+    <div><label>วันที่จ่าย *</label><input type="date" id="isD" value="${today()}"></div>
+    <div><label>ผู้จ่ายวัสดุ</label><input id="isBy" placeholder="ชื่อเจ้าหน้าที่คลัง" value="${esc(curUser.full_name)}"></div></div>
+   <div class="tw"><table><thead><tr><th>รหัส</th><th>วัสดุ</th><th class="r">คงเหลือ</th><th class="r">ขอเบิก</th><th style="width:105px">จ่ายจริง</th><th class="r">มูลค่า</th></tr></thead>
+   <tbody>${r.items.map((i,x)=>{const p=P(i.code),mx=Math.min(i.rq,p?p.cur:0);
+     return `<tr><td>${esc(i.code)}</td><td>${esc(i.name)} <small style="color:var(--mt)">(${esc(i.unit)})</small></td>
+      <td class="r ${p&&p.cur<i.rq?'':''}"><b style="color:${p&&p.cur<i.rq?'var(--rd)':'var(--tx)'}">${N(p?p.cur:0)}</b></td>
+      <td class="r">${N(i.rq)}</td>
+      <td><input type="number" id="iq${x}" min="0" max="${p?p.cur:0}" value="${mx}" oninput="calcIss()" style="text-align:right"></td>
+      <td class="r" id="am${x}">${M(mx*i.price)}</td></tr>`;}).join('')}</tbody></table></div>
+   <div style="text-align:right;margin-top:11px;font-size:13px">มูลค่าจ่ายจริงรวม: <b id="isSum" style="color:var(--gr);font-size:18px">0.00</b> บาท</div>`;
+  $('mFoot').innerHTML='<button class="b2" onclick="closeM()">ยกเลิก</button><button class="bg" onclick="confirmIss()">✓ ยืนยันจ่ายออกและตัดสต็อก</button>';
+  $('mask').classList.add('on');calcIss();
+}
+function calcIss(){
+  let t=0;curReq.items.forEach((i,x)=>{const v=+($('iq'+x).value||0);t+=v*i.price;$('am'+x).textContent=M(v*i.price);});
+  $('isSum').textContent=M(t);
+}
+async function confirmIss(){
+  const r=curReq,d=$('isD').value,by=$('isBy').value.trim()||curUser.full_name;
+  if(!d)return toast('กรุณาระบุวันที่จ่าย');
+  let ok=true,any=false,items=[];
+  r.items.forEach((i,x)=>{const v=+($('iq'+x).value||0),p=P(i.code);
+    if(v<0){ok=false;}if(p&&v>p.cur){ok=false;toast('จำนวนจ่าย '+i.code+' เกินยอดคงเหลือ');}if(v>0)any=true;items.push({code:i.code,iq:v});});
+  if(!ok)return;
+  if(!any)return toast('กรุณาระบุจำนวนจ่ายจริงอย่างน้อย 1 รายการ');
+  const{error}=await sbClient.rpc('fn_issue_requisition',{p_no:r.no,p_date:d,p_by:by,p_items:items});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  closeM();await fetchAll();renderAll();toast('จ่ายออกใบเบิก '+r.no+' เรียบร้อย — ตัดสต็อกอัตโนมัติแล้ว');
+}
 
 /* ============ 11. RECEIVE ============ */
 function rcPr(){const p=P($('rcP').value);if(p&&!$('rcPr').value)$('rcPr').value=p.price;}
@@ -868,7 +962,10 @@ function exportCSV(){
 /* ============ 17. BOOTSTRAP ============ */
 function renderAll(){
   fillSel();
-  rDash();rRqCart();rTrack();rRcCart();rRcH();rProd();rLg();rKpi();rFlow();rDept();rSettings();
+  const b1=S.reqs.filter(r=>r.status===ST.P).length,b2=S.reqs.filter(r=>r.status===ST.A).length;
+  $('bg1').textContent=b1||'';$('bg1').style.display=b1?'':'none';
+  $('bg2').textContent=b2||'';$('bg2').style.display=b2?'':'none';
+  rDash();rRqCart();rTrack();rApv();rIss();rRcCart();rRcH();rProd();rLg();rKpi();rFlow();rDept();rSettings();
 }
 function initForms(){
   $('rqDate').value=today();$('rcDate').value=today();$('kM').value=ym(today());
