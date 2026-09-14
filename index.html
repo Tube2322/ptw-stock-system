@@ -841,8 +841,15 @@ function rApv(){
      <td class="c">${short.length?`<span class="pill p-low">ไม่พอ ${short.length} รายการ</span>`:'<span class="pill p-in">เพียงพอ</span>'}</td>
      <td class="c"><button class="b2" onclick="viewReq('${r.no}')">ดู</button>
       ${isAdmin()?`<button class="b1" onclick="doApv('${r.no}')">อนุมัติ</button>
-      <button class="bx" onclick="doRej('${r.no}')">ปฏิเสธ</button>`:''}</td></tr>`;}).join('')
+      <button class="bx" onclick="doRej('${r.no}')">ปฏิเสธ</button>
+      <button class="bx" onclick="doDelReq('${r.no}')">🗑 ลบ</button>`:''}</td></tr>`;}).join('')
    :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอตรวจสอบ</td></tr>';
+}
+async function doDelReq(no){
+  if(!confirm('ยืนยันลบใบเบิก '+no+' — ลบแล้วกู้คืนไม่ได้ ต้องการลบหรือไม่?'))return;
+  const{error}=await sbClient.rpc('fn_delete_requisition',{p_no:no,p_by:curUser.full_name});
+  if(error)return toast('ผิดพลาด: '+error.message);
+  await fetchAll();renderAll();toast('ลบใบเบิก '+no+' เรียบร้อย');
 }
 async function doApv(no){
   const{error}=await sbClient.rpc('fn_approve_requisition',{p_no:no,p_by:curUser.full_name});
@@ -860,7 +867,8 @@ function rIss(){
     const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
     return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td>${esc(r.by)}</td>
      <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td><td>${esc(r.apvBy)||'—'}</td>
-     <td class="c">${isAdmin()?`<button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button>`:'—'}</td></tr>`;}).join('')
+     <td class="c">${isAdmin()?`<button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button>
+      <button class="bx" onclick="doDelReq('${r.no}')">🗑 ลบ</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอจ่ายออก</td></tr>';
   const h=S.reqs.filter(r=>r.status===ST.I).slice(0,12);
   $('issHT').innerHTML=h.length?h.map(r=>{
