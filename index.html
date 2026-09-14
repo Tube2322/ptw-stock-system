@@ -95,7 +95,7 @@ body.kiosk .kiosk-cta{display:flex;align-items:center;justify-content:space-betw
   body.kiosk .grid.g3{grid-template-columns:1fr}
   body.kiosk .rw{flex-direction:column;align-items:stretch}
   body.kiosk .rw button{width:100%}
-  body.kiosk #rqT .kiosk-hide-col{display:none}
+  body.kiosk #rqTable .kiosk-hide-col{display:none}
   body.kiosk select#rqP{font-size:13.5px}
 }
 @media(max-width:860px){aside{width:84px}.brand h1,.brand span,.rolebox,nav .ngrp,.sf,.userbadge span{display:none}main{max-width:100vw;padding:14px}
@@ -259,7 +259,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <div style="flex:1"><label>จำนวนที่ขอ</label><input type="number" id="rqQ" min="1" value="1"></div>
         <button class="bp" onclick="addRq()">+ เพิ่มรายการ</button>
       </div>
-      <div class="tw" style="margin-top:12px"><table>
+      <div class="tw" style="margin-top:12px"><table id="rqTable">
         <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่ขอ</th><th class="kiosk-hide-col">หน่วย</th><th class="r kiosk-hide-col">ราคา/หน่วย</th><th class="r">มูลค่าประมาณ</th><th class="c">ลบ</th></tr></thead>
         <tbody id="rqT"></tbody></table></div>
       <div style="margin-top:11px"><label>หมายเหตุ / วัตถุประสงค์การใช้งาน</label><textarea id="rqRm" rows="2"></textarea></div>
@@ -637,7 +637,7 @@ function addRq(){
 function rRqCart(){
   $('rqT').innerHTML=rqCart.length?rqCart.map((r,i)=>
    `<tr><td>${i+1}</td><td><b>${r.code}</b></td><td>${r.name}</td><td class="r"><b style="color:var(--pp)">${N(r.rq)}</b></td>
-    <td>${r.unit}</td><td class="r">${M(r.price)}</td><td class="r"><b>${M(r.rq*r.price)}</b></td>
+    <td class="kiosk-hide-col">${r.unit}</td><td class="r kiosk-hide-col">${M(r.price)}</td><td class="r"><b>${M(r.rq*r.price)}</b></td>
     <td class="c"><button class="bx" onclick="rqCart.splice(${i},1);rRqCart()">✕</button></td></tr>`).join('')
    :'<tr><td colspan="8" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่ต้องการเบิกได้ไม่จำกัดจำนวนรายการ</td></tr>';
   const sum=rqCart.reduce((s,r)=>s+r.rq*r.price,0);
