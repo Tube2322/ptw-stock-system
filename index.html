@@ -78,6 +78,7 @@ button{padding:8px 14px;border:none;border-radius:6px;font-size:12.8px;font-weig
 .flowlog div{padding:7px 10px;border-bottom:1px solid #eef2f7;display:flex;gap:8px}
 .flowlog span{color:var(--mt);white-space:nowrap;font-size:11px}
 .hide{display:none!important}
+body.viewer-mode .no-viewer{display:none!important}
 /* ---- kiosk mode: mobile QR entry point, single-purpose ทำใบเบิก view ---- */
 .kioskbar{display:none}
 body.kiosk aside{display:none}
@@ -185,21 +186,21 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
   <nav id="nav">
     <div class="ngrp" data-r="all,viewer">ภาพรวม</div>
     <a class="on" data-p="dash" data-r="all,viewer"><i>▦</i><span>Dashboard</span></a>
-    <div class="ngrp" data-r="all">งานผู้เบิก</div>
-    <a data-p="req" data-r="all"><i>✎</i><span>ทำใบเบิก</span></a>
-    <a data-p="track" data-r="all"><i>◷</i><span>ติดตามสถานะ</span></a>
+    <div class="ngrp" data-r="all,viewer">งานผู้เบิก</div>
+    <a data-p="req" data-r="all,viewer"><i>✎</i><span>ทำใบเบิก</span></a>
+    <a data-p="track" data-r="all,viewer"><i>◷</i><span>ติดตามสถานะ</span></a>
     <div class="ngrp" data-r="all,viewer">งานคลังสินค้า</div>
-    <a data-p="apv" data-r="all"><i>☑</i><span>ตรวจสอบใบเบิก</span><b id="bg1"></b></a>
-    <a data-p="iss" data-r="all"><i>▲</i><span>จ่ายออก</span><b id="bg2"></b></a>
-    <a data-p="rcv" data-r="all"><i>▼</i><span>รับเข้า</span></a>
-    <a data-p="prod" data-r="all"><i>▣</i><span>สินค้าคงคลัง</span></a>
+    <a data-p="apv" data-r="all,viewer"><i>☑</i><span>ตรวจสอบใบเบิก</span><b id="bg1"></b></a>
+    <a data-p="iss" data-r="all,viewer"><i>▲</i><span>จ่ายออก</span><b id="bg2"></b></a>
+    <a data-p="rcv" data-r="all,viewer"><i>▼</i><span>รับเข้า</span></a>
+    <a data-p="prod" data-r="all,viewer"><i>▣</i><span>สินค้าคงคลัง</span></a>
     <a data-p="lg" data-r="all,viewer"><i>≡</i><span>ประวัติเคลื่อนไหว</span></a>
-    <div class="ngrp" data-r="all">ระบบและวิเคราะห์</div>
-    <a data-p="kpi" data-r="all"><i>◈</i><span>Monthly KPI</span></a>
-    <a data-p="flow" data-r="all"><i>⚙</i><span>บันทึก Flow (Run History)</span></a>
-    <a data-p="dept" data-r="all"><i>⌂</i><span>หน่วยงาน</span></a>
-    <div class="ngrp" data-r="all,viewer">บัญชี</div>
-    <a data-p="settings" data-r="all,viewer"><i>⚿</i><span>ตั้งค่าบัญชี</span></a>
+    <div class="ngrp" data-r="all,viewer">ระบบและวิเคราะห์</div>
+    <a data-p="kpi" data-r="all,viewer"><i>◈</i><span>Monthly KPI</span></a>
+    <a data-p="flow" data-r="all,viewer"><i>⚙</i><span>บันทึก Flow (Run History)</span></a>
+    <a data-p="dept" data-r="all,viewer"><i>⌂</i><span>หน่วยงาน</span></a>
+    <div class="ngrp" data-r="all">บัญชี</div>
+    <a data-p="settings" data-r="all"><i>⚿</i><span>ตั้งค่าบัญชี</span></a>
   </nav>
   <div class="userbadge"><span>เข้าสู่ระบบ: <b id="loName">—</b></span><button onclick="doLogout()">ออกจากระบบ</button></div>
   <div class="sf">v2.0 · Requisition Workflow</div>
@@ -271,7 +272,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <div style="flex:2.6;min-width:190px"><label>วัสดุที่ต้องการเบิก</label><select id="rqP" onchange="rqBal()"></select></div>
         <div style="flex:1"><label>คงเหลือในคลัง</label><input id="rqAvl" readonly style="background:#f4f7fb;text-align:right"></div>
         <div style="flex:1"><label>จำนวนที่ขอ</label><input type="number" id="rqQ" min="1" value="1"></div>
-        <button class="bp" onclick="addRq()">+ เพิ่มรายการ</button>
+        <button class="bp no-viewer" onclick="addRq()">+ เพิ่มรายการ</button>
       </div>
       <div class="tw" style="margin-top:12px"><table id="rqTable">
         <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่ขอ</th><th class="kiosk-hide-col">หน่วย</th><th class="r kiosk-hide-col">ราคา/หน่วย</th><th class="r">มูลค่าประมาณ</th><th class="c">ลบ</th></tr></thead>
@@ -279,7 +280,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <div style="margin-top:11px"><label>หมายเหตุ / วัตถุประสงค์การใช้งาน</label><textarea id="rqRm" rows="2"></textarea></div>
       <div class="rw kiosk-hide" style="justify-content:flex-end;margin-top:12px">
         <div style="font-size:13px;margin-right:12px">มูลค่าประมาณ: <b id="rqSum" style="color:var(--pp);font-size:18px">0.00</b> บาท</div>
-        <button class="b2" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp" onclick="saveRq()">✓ ส่งคำขอเบิก (รอคลังตรวจสอบ)</button></div></div>
+        <button class="b2 no-viewer" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp no-viewer" onclick="saveRq()">✓ ส่งคำขอเบิก (รอคลังตรวจสอบ)</button></div></div>
   </section>
   <div class="kiosk-cta">
     <div class="sum">รายการ <span id="ctaCnt">0</span> ชิ้น<b id="ctaSum">0.00 บาท</b></div>
@@ -325,14 +326,14 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <div style="flex:1"><label>จำนวนที่สั่ง</label><input type="number" id="rcOQ" min="0" placeholder="เท่ากับจำนวนรับ"></div>
         <div style="flex:1"><label>จำนวนที่รับจริง</label><input type="number" id="rcQ" min="1" value="1"></div>
         <div style="flex:1"><label>ราคา/หน่วย</label><input type="number" id="rcPr" min="0" step="0.01"></div>
-        <button class="bg" onclick="addRc()">+ เพิ่มรายการ</button></div>
+        <button class="bg no-viewer" onclick="addRc()">+ เพิ่มรายการ</button></div>
       <div class="tw" style="margin-top:12px"><table>
         <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">สั่ง</th><th class="r">รับจริง</th><th class="r">ค้างรับ</th><th>หน่วย</th><th class="r">ราคา/หน่วย</th><th class="r">รวม</th><th class="c">ลบ</th></tr></thead>
         <tbody id="rcT"></tbody></table></div>
       <div style="margin-top:11px"><label>หมายเหตุ</label><textarea id="rcRm" rows="2"></textarea></div>
       <div class="rw" style="justify-content:flex-end;margin-top:12px">
         <div style="font-size:13px;margin-right:12px">มูลค่ารวม: <b id="rcSum" style="color:var(--gr);font-size:18px">0.00</b> บาท</div>
-        <button class="b2" onclick="clrRc()">ล้างฟอร์ม</button><button class="bg" onclick="saveRc()">✓ บันทึกรับเข้า</button></div></div>
+        <button class="b2 no-viewer" onclick="clrRc()">ล้างฟอร์ม</button><button class="bg no-viewer" onclick="saveRc()">✓ บันทึกรับเข้า</button></div></div>
     <div class="card"><h3>ประวัติการรับเข้า (Receive List)</h3>
       <div class="tw"><table><thead><tr><th>ReceiveNo</th><th>วันที่</th><th>Supplier</th><th>รหัส</th><th>วัสดุ</th><th class="r">สั่ง</th><th class="r">รับจริง</th><th class="r">ค้างรับ</th><th class="r">UnitPrice</th><th class="r">Total</th></tr></thead><tbody id="rcHT"></tbody></table></div></div>
   </section>
@@ -343,7 +344,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <div class="rw" style="margin-bottom:12px">
         <div style="flex:1;min-width:190px"><input id="qPd" placeholder="🔍 ค้นหารหัส / ชื่อวัสดุ..." oninput="rProd()"></div>
         <select id="fPd" style="width:165px" onchange="rProd()"><option value="">ทุกสถานะ</option><option value="ok">ปกติ</option><option value="low">ต่ำกว่า Min</option><option value="zero">หมดสต็อก</option></select>
-        <button class="b1" onclick="openPd()">+ เพิ่มวัสดุ</button></div>
+        <button class="b1 no-viewer" onclick="openPd()">+ เพิ่มวัสดุ</button></div>
       <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อวัสดุ</th><th>หมวดหมู่</th><th>หน่วย</th><th class="r">ยอดยกมา</th><th class="r">คงเหลือ</th><th style="width:118px">ระดับสต็อก</th><th class="r">Min</th><th class="r">Reorder</th><th class="r">ราคา/หน่วย</th><th class="r">มูลค่ารวม</th><th class="c">สถานะ</th><th class="c">จัดการ</th></tr></thead><tbody id="pdT"></tbody></table></div></div>
   </section>
 
@@ -367,7 +368,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <div style="flex:1"><label>จำนวน OPD (ครั้ง)</label><input type="number" id="kO" min="0"></div>
         <div style="flex:1"><label>จำนวน IPD (ราย)</label><input type="number" id="kI" min="0"></div>
         <div style="flex:1"><label>IPD Day (วันนอน)</label><input type="number" id="kD" min="0"></div>
-        <button class="b1" onclick="saveKpi()">บันทึก / ปรับปรุง</button></div></div>
+        <button class="b1 no-viewer" onclick="saveKpi()">บันทึก / ปรับปรุง</button></div></div>
     <div class="card"><h3>ตารางวิเคราะห์ต้นทุนวัสดุเทียบตัวชี้วัด</h3>
       <div class="tw"><table><thead><tr><th>เดือน</th><th class="r">รายได้</th><th class="r">ต้นทุนวัสดุ</th><th class="r">% ต่อรายได้</th><th class="r">OPD</th><th class="r">IPD</th><th class="r">IPD Day</th><th class="r">ต้นทุน/OPD</th><th class="r">ต้นทุน/IPD</th><th class="r">ต้นทุน/วันนอน</th><th class="c">ลบ</th></tr></thead><tbody id="kpiT"></tbody></table></div>
       <p style="font-size:11.5px;color:var(--mt);margin-top:10px">* ต้นทุนวัสดุ (TotalIssueCost) คำนวณอัตโนมัติจากผลรวมมูลค่าใบเบิกที่มีสถานะ "จ่ายแล้ว" ภายในเดือนนั้น</p></div>
@@ -378,6 +379,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
     <div class="card" style="border-top:3px solid var(--acc)"><h3>📋 บันทึกการทำงานของ Flow (Run History)</h3>
       <p style="font-size:12px;color:var(--mt);margin-bottom:12px">บันทึกละเอียดทุกการทำงานอัตโนมัติในระบบ — ใครทำ กดอะไร เมื่อไหร่ วันไหน เรียงล่าสุดก่อน</p>
       <div class="rw" style="margin-bottom:12px">
+        <div style="width:170px"><label>เดือน</label><select id="flMonth" onchange="rFlow()"></select></div>
         <div style="flex:1;min-width:200px"><label>ค้นหา</label><input id="qFl" placeholder="ชื่อ Flow / รายละเอียด / ผู้ทำรายการ" oninput="rFlow()"></div>
       </div>
       <div class="tw"><table><thead><tr><th style="white-space:nowrap">วันที่-เวลา</th><th>Flow</th><th>รายละเอียด</th><th>ผู้ทำรายการ</th></tr></thead><tbody id="flT"></tbody></table></div></div>
@@ -397,7 +399,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <div class="rw" style="margin-bottom:12px">
         <div style="flex:1"><label>รหัสหน่วยงาน</label><input id="dpC" placeholder="เช่น DEP-07"></div>
         <div style="flex:2"><label>ชื่อหน่วยงาน</label><input id="dpN" placeholder="เช่น หอผู้ป่วยใน ชั้น 4"></div>
-        <button class="b1" onclick="addDept()">+ เพิ่มหน่วยงาน</button></div>
+        <button class="b1 no-viewer" onclick="addDept()">+ เพิ่มหน่วยงาน</button></div>
       <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อหน่วยงาน</th><th class="r">ใบเบิกทั้งหมด</th><th class="r">จ่ายแล้ว</th><th class="r">มูลค่าเบิกสะสม</th><th class="c">จัดการ</th></tr></thead><tbody id="dpT"></tbody></table></div></div>
   </section>
 
@@ -522,6 +524,7 @@ const TT={dash:['Dashboard','ภาพรวมและการวิเคร
  settings:['ตั้งค่าบัญชี','จัดการบัญชีของฉันและสิทธิ์การใช้งาน']};
 const ROLE_LABEL={all:'ผู้ดูแลระบบ (ทุกสิทธิ์)',viewer:'ผู้ชม (อ่านอย่างเดียว)'};
 function go(p){
+  if(p==='settings'&&curUser.role!=='all')p='dash';
   document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
   $('p-'+p).classList.add('on');$('ttl').textContent=TT[p][0];$('sub').textContent=TT[p][1];renderAll();
@@ -532,7 +535,7 @@ function applyRoleUI(r){
   const vis=[...document.querySelectorAll('#nav a')].filter(a=>!a.classList.contains('hide'));
   if(vis.length&&!vis.some(a=>a.classList.contains('on')))go(vis[0].dataset.p);
 }
-function setRole(){applyRoleUI($('role').value);}
+function setRole(){const v=$('role').value;document.body.classList.toggle('viewer-mode',v==='viewer');applyRoleUI(v);}
 
 /* ============ 6. DASHBOARD ============ */
 const monthCost=m=>S.reqs.filter(r=>r.status===ST.I&&ym(r.issDate)===m).reduce((s,r)=>s+r.total,0);
@@ -686,7 +689,7 @@ function rRqCart(){
   $('rqT').innerHTML=rqCart.length?rqCart.map((r,i)=>
    `<tr><td>${i+1}</td><td><b>${r.code}</b></td><td>${r.name}</td><td class="r"><b style="color:var(--pp)">${N(r.rq)}</b></td>
     <td class="kiosk-hide-col">${r.unit}</td><td class="r kiosk-hide-col">${M(r.price)}</td><td class="r"><b>${M(r.rq*r.price)}</b></td>
-    <td class="c"><button class="bx" onclick="rqCart.splice(${i},1);rRqCart()">✕</button></td></tr>`).join('')
+    <td class="c">${curUser.role==='all'?`<button class="bx" onclick="rqCart.splice(${i},1);rRqCart()">✕</button>`:'—'}</td></tr>`).join('')
    :'<tr><td colspan="8" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่ต้องการเบิกได้ไม่จำกัดจำนวนรายการ</td></tr>';
   const sum=rqCart.reduce((s,r)=>s+r.rq*r.price,0);
   $('rqSum').textContent=M(sum);
@@ -774,8 +777,8 @@ function rApv(){
      <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td>
      <td class="c">${short.length?`<span class="pill p-low">ไม่พอ ${short.length} รายการ</span>`:'<span class="pill p-in">เพียงพอ</span>'}</td>
      <td class="c"><button class="b2" onclick="viewReq('${r.no}')">ดู</button>
-      <button class="b1" onclick="doApv('${r.no}')">อนุมัติ</button>
-      <button class="bx" onclick="doRej('${r.no}')">ปฏิเสธ</button></td></tr>`;}).join('')
+      ${curUser.role==='all'?`<button class="b1" onclick="doApv('${r.no}')">อนุมัติ</button>
+      <button class="bx" onclick="doRej('${r.no}')">ปฏิเสธ</button>`:''}</td></tr>`;}).join('')
    :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอตรวจสอบ</td></tr>';
 }
 async function doApv(no){
@@ -794,7 +797,7 @@ function rIss(){
     const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
     return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td>${esc(r.by)}</td>
      <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td><td>${esc(r.apvBy)||'—'}</td>
-     <td class="c"><button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button></td></tr>`;}).join('')
+     <td class="c">${curUser.role==='all'?`<button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอจ่ายออก</td></tr>';
   const h=S.reqs.filter(r=>r.status===ST.I).slice(0,12);
   $('issHT').innerHTML=h.length?h.map(r=>{
@@ -856,7 +859,7 @@ function rRcCart(){
     <td class="r"><b style="color:var(--gr)">${N(r.qty)}</b></td>
     <td class="r">${pend?'<span class="pill p-low">'+N(pend)+'</span>':'—'}</td>
     <td>${esc(r.unit)}</td><td class="r">${M(r.price)}</td><td class="r"><b>${M(r.qty*r.price)}</b></td>
-    <td class="c"><button class="bx" onclick="rcCart.splice(${i},1);rRcCart()">✕</button></td></tr>`;}).join('')
+    <td class="c">${curUser.role==='all'?`<button class="bx" onclick="rcCart.splice(${i},1);rRcCart()">✕</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="10" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่รับเข้าคลัง</td></tr>';
   $('rcSum').textContent=M(rcCart.reduce((s,r)=>s+r.qty*r.price,0));
 }
@@ -894,7 +897,7 @@ function rProd(){
      <td><div class="bar"><i style="width:${pct}%;background:${col}"></i></div></td>
      <td class="r">${N(p.min)}</td><td class="r">${p.reorder>0?N(p.reorder):'—'}</td><td class="r">${M(p.price)}</td><td class="r"><b>${M(p.cur*p.price)}</b></td>
      <td class="c">${p.act==1?`<span class="pill ${c}">${t}</span>`:'<span class="pill p-off">ปิดใช้งาน</span>'}${reorderFlag}</td>
-     <td class="c"><button class="b2" onclick="openPd(${p.id})">แก้ไข</button> <button class="bx" onclick="delPd(${p.id})">ลบ</button></td></tr>`;}).join('')
+     <td class="c">${curUser.role==='all'?`<button class="b2" onclick="openPd(${p.id})">แก้ไข</button> <button class="bx" onclick="delPd(${p.id})">ลบ</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="13" class="empty">ไม่พบข้อมูลวัสดุ</td></tr>';
 }
 function openPd(id){
@@ -981,15 +984,21 @@ function rKpi(){
      <td class="r"><b>${k.rev?(c/k.rev*100).toFixed(2):'0.00'}%</b></td>
      <td class="r">${N(k.opd)}</td><td class="r">${N(k.ipd)}</td><td class="r">${N(k.ipdd)}</td>
      <td class="r">${M(k.opd?c/k.opd:0)}</td><td class="r">${M(k.ipd?c/k.ipd:0)}</td><td class="r">${M(k.ipdd?c/k.ipdd:0)}</td>
-     <td class="c"><button class="bx" onclick="delKpi('${k.m}')">ลบ</button></td></tr>`;}).join('')
+     <td class="c">${curUser.role==='all'?`<button class="bx" onclick="delKpi('${k.m}')">ลบ</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="11" class="empty">ยังไม่มีข้อมูลตัวชี้วัด</td></tr>';
 }
 
 /* ============ 15. FLOW LOG & DEPT ============ */
 function rFlow(){
+  const months=[...new Set(S.flow.map(f=>ym(f.ts)))].sort().reverse();
+  if($('flMonth').options.length!==months.length+1){
+    $('flMonth').innerHTML='<option value="ALL">ทั้งหมด</option>'+months.map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
+    if(months.length)$('flMonth').value=months[0];
+  }
+  const mSelFl=$('flMonth').value||'ALL';
   const q=($('qFl')?$('qFl').value:'').toLowerCase();
-  const rows=S.flow.filter(f=>!q||(f.n+f.msg+f.by).toLowerCase().includes(q));
-  $('flT').innerHTML=rows.length?rows.slice(0,300).map(f=>
+  const rows=S.flow.filter(f=>(mSelFl==='ALL'||ym(f.ts)===mSelFl)&&(!q||(f.n+f.msg+f.by).toLowerCase().includes(q)));
+  $('flT').innerHTML=rows.length?rows.slice(0,500).map(f=>
    `<tr><td style="white-space:nowrap">${dt(f.ts)}</td><td><b style="color:var(--acc)">${esc(f.n)}</b></td><td>${esc(f.msg)}</td><td>${esc(f.by)}</td></tr>`).join('')
    :'<tr><td colspan="4" class="empty">ไม่พบบันทึกการทำงานตามเงื่อนไข</td></tr>';
 }
@@ -1011,7 +1020,7 @@ function rDept(){
   $('dpT').innerHTML=S.depts.map(d=>{const rs=S.reqs.filter(r=>r.dep===d.n),is=rs.filter(r=>r.status===ST.I);
     return `<tr><td><b>${esc(d.c)}</b></td><td>${esc(d.n)}</td><td class="r">${N(rs.length)}</td><td class="r">${N(is.length)}</td>
      <td class="r"><b>${M(is.reduce((s,r)=>s+r.total,0))}</b></td>
-     <td class="c"><button class="bx" onclick="delDept('${d.c}')">ลบ</button></td></tr>`;}).join('');
+     <td class="c">${curUser.role==='all'?`<button class="bx" onclick="delDept('${d.c}')">ลบ</button>`:'—'}</td></tr>`;}).join('');
 }
 
 /* ============ 15b. ACCOUNT SETTINGS & USER MANAGEMENT ============ */
@@ -1188,11 +1197,13 @@ async function doLogin(){
   if(error){$('loErr').textContent='ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';return;}
   await enterApp(data.user);
 }
-async function doLogout(){await sbClient.auth.signOut();location.reload();}
+let loggingOut=false;
+async function doLogout(){loggingOut=true;await sbClient.auth.signOut();location.reload();}
 async function enterApp(authUser){
   const{data:prof,error}=await sbClient.from('profiles').select('*').eq('id',authUser.id).single();
   if(error||!prof){$('loErr').textContent='ไม่พบข้อมูลผู้ใช้งานนี้ในระบบ';await sbClient.auth.signOut();return;}
   curUser={id:authUser.id,username:prof.username,full_name:prof.full_name,role:prof.role};
+  document.body.classList.toggle('viewer-mode',curUser.role==='viewer');
   $('loginScreen').classList.add('off');
   $('loName').textContent=curUser.full_name+' ('+curUser.username+')';
   $('roleAdminBox').style.display=curUser.role==='all'?'':'none';
@@ -1223,10 +1234,10 @@ async function boot(){
 }
 boot();
 sbClient.auth.onAuthStateChange((event)=>{
-  if(event==='SIGNED_OUT'&&curUser){curUser=null;alert('เซสชันหมดอายุหรือถูกออกจากระบบ กรุณาเข้าสู่ระบบใหม่');location.reload();}
+  if(event==='SIGNED_OUT'&&curUser&&!loggingOut){curUser=null;alert('เซสชันหมดอายุหรือถูกออกจากระบบ กรุณาเข้าสู่ระบบใหม่');location.reload();}
 });
 setInterval(async()=>{
-  if(!curUser)return;
+  if(!curUser||loggingOut)return;
   const{data:{session}}=await sbClient.auth.getSession();
   if(!session){curUser=null;alert('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่');location.reload();}
 },5*60*1000);
