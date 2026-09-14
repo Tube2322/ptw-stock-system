@@ -279,7 +279,11 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <div style="font-size:12.5px;line-height:1.9;color:var(--mt)">
           สแกน QR Code เพื่อเปิดฟอร์มใบเบิกบนมือถือ<br>
           หรือเปิดลิงก์โดยตรง — รองรับผู้ใช้ที่ไม่มีบัญชี Microsoft 365<br>
-          <b style="color:var(--tx)">สิทธิ์:</b> ทำใบเบิก · ติดตามสถานะ · ดูประวัติการเบิก</div></div></div>
+          <b style="color:var(--tx)">สิทธิ์:</b> ทำใบเบิก · ติดตามสถานะ · ดูประวัติการเบิก
+          <div class="rw" style="margin-top:8px;gap:8px">
+            <button class="b2" onclick="dlQr()">⬇ ดาวน์โหลด QR</button>
+            <button class="b2" onclick="copyQrLink()">🔗 คัดลอกลิงก์</button>
+          </div></div></div></div>
     <div class="card" style="border-top:3px solid var(--pp)"><h3>✎ แบบฟอร์มใบขอเบิกวัสดุ (Requisition)</h3>
       <div class="grid g3" style="margin-bottom:12px">
         <div class="kiosk-hide"><label>เลขที่ใบเบิก (อัตโนมัติ)</label><input id="rqNo" readonly value="สร้างอัตโนมัติเมื่อบันทึก (ISS-YYYYMM-NNN)" style="background:#f4f7fb"></div>
@@ -1255,9 +1259,29 @@ function renderAll(){
   $('bg2').textContent=b2||'';$('bg2').style.display=b2?'':'none';
   rDash();rRqCart();rTrack();rApv();rIss();rRcCart();rRcH();rProd();rLg();rKpi();rFlow();rDept();rSettings();
 }
+function qrLink(){return location.origin+location.pathname+location.search+'#req';}
 function initForms(){
   $('rqDate').value=today();$('rcDate').value=today();$('kM').value=ym(today());
-  $('qrimg').src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(location.href+'#req');
+  $('qrimg').src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(qrLink());
+}
+async function dlQr(){
+  try{
+    const res=await fetch($('qrimg').src);
+    const blob=await res.blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download='ptw-req-qrcode.png';
+    document.body.appendChild(a);a.click();a.remove();
+  }catch(e){window.open($('qrimg').src,'_blank');}
+}
+async function copyQrLink(){
+  const link=qrLink();
+  try{await navigator.clipboard.writeText(link);toast('คัดลอกลิงก์แล้ว');}
+  catch(e){
+    const ta=document.createElement('textarea');ta.value=link;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('คัดลอกลิงก์แล้ว');}catch(e2){toast('คัดลอกไม่สำเร็จ — ลิงก์: '+link);}
+    ta.remove();
+  }
 }
 /* ============ 18. LOGIN (Supabase Auth) ============ */
 function showSignup(){$('loPane').classList.add('hide');$('suPane').classList.remove('hide');$('loSubTxt').textContent='สมัครสมาชิกใหม่ — จะได้สิทธิ์ผู้ชมก่อน รอผู้ดูแลระบบเลื่อนสิทธิ์ให้ภายหลัง';}
