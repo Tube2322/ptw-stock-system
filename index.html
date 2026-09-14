@@ -82,10 +82,21 @@ body.kiosk .kioskbar{display:flex;align-items:center;justify-content:space-betwe
   position:fixed;top:0;left:0;right:0;height:52px;padding:0 16px;background:var(--nav);color:#fff;z-index:60}
 .kioskbar b{font-size:14px}
 .kioskbar button{background:transparent;color:#9db3dd;font-size:11.5px;text-decoration:underline;padding:6px 0}
+body.kiosk .kiosk-hide{display:none}
+body.kiosk main{padding-bottom:84px}
+.kiosk-cta{display:none}
+body.kiosk .kiosk-cta{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--ln);
+  padding:10px 14px;z-index:55;box-shadow:0 -4px 14px rgba(20,40,90,.08)}
+.kiosk-cta .sum{font-size:12px;color:var(--mt)}
+.kiosk-cta .sum b{display:block;font-size:16px;color:var(--pp)}
+.kiosk-cta button{flex:1;max-width:220px;padding:12px;font-size:13.5px}
 @media(max-width:520px){
   body.kiosk .grid.g3{grid-template-columns:1fr}
   body.kiosk .rw{flex-direction:column;align-items:stretch}
   body.kiosk .rw button{width:100%}
+  body.kiosk #rqT .kiosk-hide-col{display:none}
+  body.kiosk select#rqP{font-size:13.5px}
 }
 @media(max-width:860px){aside{width:84px}.brand h1,.brand span,.rolebox,nav .ngrp,.sf,.userbadge span{display:none}main{max-width:100vw;padding:14px}
 nav a{flex-direction:column;justify-content:center;gap:3px;padding:8px 4px;position:relative}
@@ -237,7 +248,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
           <b style="color:var(--tx)">สิทธิ์:</b> ทำใบเบิก · ติดตามสถานะ · ดูประวัติการเบิก</div></div></div>
     <div class="card" style="border-top:3px solid var(--pp)"><h3>✎ แบบฟอร์มใบขอเบิกวัสดุ (Requisition)</h3>
       <div class="grid g3" style="margin-bottom:12px">
-        <div><label>เลขที่ใบเบิก (อัตโนมัติ)</label><input id="rqNo" readonly value="สร้างอัตโนมัติเมื่อบันทึก (ISS-YYYYMM-NNN)" style="background:#f4f7fb"></div>
+        <div class="kiosk-hide"><label>เลขที่ใบเบิก (อัตโนมัติ)</label><input id="rqNo" readonly value="สร้างอัตโนมัติเมื่อบันทึก (ISS-YYYYMM-NNN)" style="background:#f4f7fb"></div>
         <div><label>วันที่ขอเบิก *</label><input type="date" id="rqDate"></div>
         <div><label>หน่วยงาน *</label><select id="rqDep"></select></div>
         <div><label>ชื่อผู้ขอเบิก *</label><input id="rqBy" placeholder="ชื่อ-นามสกุล"></div>
@@ -249,13 +260,18 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <button class="bp" onclick="addRq()">+ เพิ่มรายการ</button>
       </div>
       <div class="tw" style="margin-top:12px"><table>
-        <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่ขอ</th><th>หน่วย</th><th class="r">ราคา/หน่วย</th><th class="r">มูลค่าประมาณ</th><th class="c">ลบ</th></tr></thead>
+        <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่ขอ</th><th class="kiosk-hide-col">หน่วย</th><th class="r kiosk-hide-col">ราคา/หน่วย</th><th class="r">มูลค่าประมาณ</th><th class="c">ลบ</th></tr></thead>
         <tbody id="rqT"></tbody></table></div>
       <div style="margin-top:11px"><label>หมายเหตุ / วัตถุประสงค์การใช้งาน</label><textarea id="rqRm" rows="2"></textarea></div>
-      <div class="rw" style="justify-content:flex-end;margin-top:12px">
+      <div class="rw kiosk-hide" style="justify-content:flex-end;margin-top:12px">
         <div style="font-size:13px;margin-right:12px">มูลค่าประมาณ: <b id="rqSum" style="color:var(--pp);font-size:18px">0.00</b> บาท</div>
         <button class="b2" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp" onclick="saveRq()">✓ ส่งคำขอเบิก (รอคลังตรวจสอบ)</button></div></div>
   </section>
+  <div class="kiosk-cta">
+    <div class="sum">รายการ <span id="ctaCnt">0</span> ชิ้น<b id="ctaSum">0.00 บาท</b></div>
+    <button class="b2" onclick="clrRq()" style="flex:0 0 auto;max-width:none">ล้าง</button>
+    <button class="bp" onclick="saveRq()">✓ ส่งคำขอเบิก</button>
+  </div>
 
   <!-- ========== ติดตามสถานะ ========== -->
   <section class="page" id="p-track">
@@ -604,7 +620,8 @@ function rCatCost(){
 /* ============ 7. REQUISITION (ผู้เบิก) ============ */
 function fillSel(){
   const opt=S.products.filter(p=>p.act==1).map(p=>`<option value="${esc(p.code)}">${esc(p.code)} — ${esc(p.name)}</option>`).join('');
-  ['rqP','rcP'].forEach(i=>{const v=$(i).value;$(i).innerHTML=opt;if(v)$(i).value=v;});
+  const v0=$('rqP').value;$('rqP').innerHTML='<option value="">— เลือกวัสดุ —</option>'+opt;$('rqP').value=v0||'';
+  const vc=$('rcP').value;$('rcP').innerHTML=opt;if(vc)$('rcP').value=vc;
   const dv=$('rqDep').value;$('rqDep').innerHTML=S.depts.map(d=>`<option value="${esc(d.c)}">${esc(d.n)}</option>`).join('');if(dv)$('rqDep').value=dv;
   rqBal();rcPr();
 }
@@ -623,7 +640,9 @@ function rRqCart(){
     <td>${r.unit}</td><td class="r">${M(r.price)}</td><td class="r"><b>${M(r.rq*r.price)}</b></td>
     <td class="c"><button class="bx" onclick="rqCart.splice(${i},1);rRqCart()">✕</button></td></tr>`).join('')
    :'<tr><td colspan="8" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่ต้องการเบิกได้ไม่จำกัดจำนวนรายการ</td></tr>';
-  $('rqSum').textContent=M(rqCart.reduce((s,r)=>s+r.rq*r.price,0));
+  const sum=rqCart.reduce((s,r)=>s+r.rq*r.price,0);
+  $('rqSum').textContent=M(sum);
+  if($('ctaCnt')){$('ctaCnt').textContent=N(rqCart.reduce((s,r)=>s+r.rq,0));$('ctaSum').textContent=M(sum)+' บาท';}
 }
 async function saveRq(){
   if(!rqCart.length)return toast('กรุณาเพิ่มรายการวัสดุอย่างน้อย 1 รายการ');
