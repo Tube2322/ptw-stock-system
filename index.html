@@ -133,7 +133,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
 </head>
 <body>
 
-<div class="kioskbar"><b>✎ ทำใบเบิกวัสดุ — PTW STOCK</b><button onclick="doLogout()">ออกจากระบบ</button></div>
+<div class="kioskbar"><b>✎ ทำใบเบิกวัสดุ — PTW STOCK</b><button id="kioskBtn" onclick="doLogout()">ออกจากระบบ</button></div>
 
 <div id="loginScreen">
   <div class="loginbox">
@@ -1022,8 +1022,24 @@ async function enterApp(authUser){
   await fetchAll();initForms();renderAll();
   if(location.hash==='#req'&&curUser.role==='all')go('req');
 }
+async function bootKiosk(){
+  const[depR,prodR]=await Promise.all([
+    sbClient.from('departments').select('*').order('code'),
+    sbClient.from('products').select('*').order('code')
+  ]);
+  S.depts=(depR.data||[]).map(d=>({c:d.code,n:d.name}));
+  S.products=(prodR.data||[]).map(p=>({id:p.id,code:p.code,name:p.name,unit:p.unit,price:+p.price,open:+p.open_qty,cur:+p.cur_qty,min:+p.min_qty,reorder:+p.reorder_point,act:p.active?1:0}));
+  $('loginScreen').classList.add('off');
+  $('kioskBtn').textContent='↺ เริ่มใบเบิกใหม่';$('kioskBtn').onclick=()=>location.reload();
+  initForms();go('req');
+}
 async function boot(){
-  if(location.hash==='#req')document.body.classList.add('kiosk');
+  if(location.hash==='#req'){
+    document.body.classList.add('kiosk');
+    const{data:{session}}=await sbClient.auth.getSession();
+    if(session)return enterApp(session.user);
+    return bootKiosk();
+  }
   const{data:{session}}=await sbClient.auth.getSession();
   if(session){await enterApp(session.user);}else{$('loginScreen').classList.remove('off');}
 }
