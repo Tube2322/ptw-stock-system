@@ -394,6 +394,18 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
     </div>
     <div class="card hide" id="userMgmtCard"><h3>จัดการผู้ใช้งานและสิทธิ์ (เฉพาะผู้ดูแลระบบ)</h3>
       <div class="tw"><table><thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อ-นามสกุล</th><th class="c">สิทธิ์ปัจจุบัน</th><th style="width:190px">เปลี่ยนสิทธิ์เป็น</th><th class="c">บันทึก</th></tr></thead><tbody id="userT"></tbody></table></div></div>
+    <div class="card hide" id="purgeMonthCard" style="border-top:3px solid var(--or)"><h3>🗄 ลบข้อมูลย้อนหลังรายเดือน (เฉพาะผู้ดูแลระบบ)</h3>
+      <p style="font-size:12.5px;color:var(--mt);margin-bottom:12px">ลบใบเบิก/ใบรับ/ประวัติเคลื่อนไหวสต็อกของเดือนที่เลือกทิ้งถาวร เพื่อประหยัดพื้นที่ — ไม่กระทบยอดสต็อกปัจจุบัน และไม่ลบตัวชี้วัด Monthly KPI</p>
+      <div class="rw" style="margin-bottom:10px">
+        <div style="flex:1;min-width:170px"><label>เลือกเดือนที่จะลบ</label><select id="pgMonth" onchange="rPurgeMonth()"></select></div>
+      </div>
+      <div id="pgSummary" style="font-size:12.8px;line-height:1.9;margin-bottom:12px"></div>
+      <div class="rw">
+        <button class="b2" id="pgExportBtn" onclick="exportPurgeMonth()">⤓ ดาวน์โหลดข้อมูลเดือนนี้ก่อนลบ (CSV)</button>
+        <button class="br" id="pgDeleteBtn" onclick="openPurgeConfirm()" disabled>🗑 ลบข้อมูลเดือนนี้ถาวร</button>
+      </div>
+      <p id="pgExportHint" style="font-size:11.5px;color:var(--or);margin-top:8px">⚠ กรุณาดาวน์โหลดข้อมูลก่อน ปุ่มลบจะเปิดใช้งานหลังดาวน์โหลดแล้ว</p>
+    </div>
     <div class="card hide" id="resetDataCard" style="border-top:3px solid var(--rd)"><h3>⚠ รีเซ็ตข้อมูลระบบ (เฉพาะผู้ดูแลระบบ)</h3>
       <p style="font-size:12.5px;color:var(--mt);margin-bottom:12px">ใช้ตอนอยากล้างข้อมูลตัวอย่าง/ข้อมูลเดโม่ทั้งหมดออก ก่อนเริ่มกรอกข้อมูลจริงของหน่วยงาน</p>
       <button class="br" onclick="openResetConfirm()">🗑 รีเซ็ตข้อมูลระบบทั้งหมด</button></div>
@@ -903,6 +915,7 @@ function rSettings(){
   $('acUsername2').textContent=curUser.username;
   $('acRole').textContent=ROLE_LABEL[curUser.role]||curUser.role;
   $('userMgmtCard').classList.toggle('hide',curUser.role!=='all');
+  $('purgeMonthCard').classList.toggle('hide',curUser.role!=='all');
   $('resetDataCard').classList.toggle('hide',curUser.role!=='all');
   if(curUser.role==='all'){
     $('userT').innerHTML=S.users.map(u=>`<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.full_name)}</td>
@@ -910,7 +923,92 @@ function rSettings(){
       <td><select id="ur_${u.id}"><option value="viewer" ${u.role==='viewer'?'selected':''}>ผู้ชม (อ่านอย่างเดียว)</option>
         <option value="all" ${u.role==='all'?'selected':''}>ผู้ดูแลระบบ (ทุกสิทธิ์)</option></select></td>
       <td class="c"><button class="b1" onclick="saveUserRole('${u.id}')" ${u.id===curUser.id?'disabled title="แก้สิทธิ์ตัวเองไม่ได้"':''}>บันทึก</button></td></tr>`).join('');
+    rPurgeMonth();
   }
+}
+let pgExportedMonth=null;
+function pgMonths(){
+  const s=new Set();
+  S.reqs.forEach(r=>r.date&&s.add(ym(r.date)));
+  S.receives.forEach(r=>r.date&&s.add(ym(r.date)));
+  S.trans.forEach(t=>t.ts&&s.add(ym(t.ts)));
+  return[...s].sort().reverse();
+}
+function rPurgeMonth(){
+  const months=pgMonths();
+  if(!months.length){
+    $('pgMonth').innerHTML='<option value="">— ไม่มีข้อมูลย้อนหลัง —</option>';
+    $('pgSummary').innerHTML='<span style="color:var(--mt)">ยังไม่มีข้อมูลในระบบให้ลบ</span>';
+    $('pgExportBtn').disabled=true;$('pgDeleteBtn').disabled=true;$('pgExportHint').classList.add('hide');
+    return;
+  }
+  const cur=$('pgMonth').value;
+  if($('pgMonth').options.length!==months.length||!months.includes(cur)){
+    $('pgMonth').innerHTML=months.map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
+  }
+  const m=$('pgMonth').value;
+  const rq=S.reqs.filter(r=>ym(r.date)===m).length;
+  const rc=new Set(S.receives.filter(r=>ym(r.date)===m).map(r=>r.no)).size;
+  const tx=S.trans.filter(t=>ym(t.ts)===m).length;
+  $('pgSummary').innerHTML=`ข้อมูลเดือน <b>${mLabel(m)}</b> ที่จะถูกลบ:
+   <ul style="margin:6px 0 0 20px">
+    <li>ใบเบิก <b>${N(rq)}</b> ใบ</li>
+    <li>ใบรับเข้า <b>${N(rc)}</b> ใบ</li>
+    <li>รายการ ledger <b>${N(tx)}</b> รายการ</li>
+   </ul>`;
+  $('pgExportBtn').disabled=false;
+  const exported=pgExportedMonth===m;
+  $('pgDeleteBtn').disabled=!exported;
+  $('pgExportHint').classList.toggle('hide',exported);
+}
+function pgCsv(rows,filename){
+  if(!rows.length)return;
+  const h=Object.keys(rows[0]);
+  const csv='﻿'+[h,...rows.map(r=>h.map(k=>r[k]))].map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=filename;a.click();
+}
+function exportPurgeMonth(){
+  const m=$('pgMonth').value;if(!m)return;
+  const reqRows=[];
+  S.reqs.filter(r=>ym(r.date)===m).forEach(r=>r.items.forEach(i=>reqRows.push({เลขที่:r.no,วันที่:r.date,หน่วยงาน:r.dep,ผู้ขอเบิก:r.by,สถานะ:r.status,รหัสวัสดุ:i.code,ชื่อวัสดุ:i.name,ขอเบิก:i.rq,จ่ายจริง:i.iq,ราคาต่อหน่วย:i.price,รวม:i.total})));
+  const rcvRows=S.receives.filter(r=>ym(r.date)===m).map(r=>({เลขที่:r.no,วันที่:r.date,ผู้จำหน่าย:r.sup,รหัสวัสดุ:r.code,ชื่อวัสดุ:r.name,สั่ง:r.orderQty,รับจริง:r.qty,ราคาต่อหน่วย:r.price,รวม:r.total}));
+  const txRows=S.trans.filter(t=>ym(t.ts)===m).map(t=>({วันเวลา:t.ts,เอกสาร:t.doc,ประเภท:t.type,รหัสวัสดุ:t.code,ชื่อวัสดุ:t.name,จำนวน:t.qty,คงเหลือ:t.bal,อ้างอิง:t.ref,ผู้ทำรายการ:t.by}));
+  pgCsv(reqRows,'PTW_ใบเบิก_'+m+'.csv');
+  pgCsv(rcvRows,'PTW_ใบรับ_'+m+'.csv');
+  pgCsv(txRows,'PTW_ledger_'+m+'.csv');
+  pgExportedMonth=m;
+  toast('ดาวน์โหลดข้อมูลเดือน '+mLabel(m)+' เรียบร้อย — ปุ่มลบเปิดใช้งานแล้ว');
+  rPurgeMonth();
+}
+function openPurgeConfirm(){
+  const m=$('pgMonth').value;if(!m)return;
+  $('mTtl').textContent='⚠ ยืนยันลบข้อมูลเดือน '+mLabel(m);
+  const rq=S.reqs.filter(r=>ym(r.date)===m).length;
+  const rc=new Set(S.receives.filter(r=>ym(r.date)===m).map(r=>r.no)).size;
+  const tx=S.trans.filter(t=>ym(t.ts)===m).length;
+  $('mBody').innerHTML=`
+   <p style="margin-bottom:12px">กดยืนยันแล้วจะ<b style="color:var(--rd)">ลบข้อมูลเดือน ${mLabel(m)} ถาวร — กู้คืนไม่ได้</b>:</p>
+   <ul style="margin:0 0 14px 20px;font-size:12.8px;line-height:1.9">
+     <li>ใบเบิก <b>${N(rq)}</b> ใบ</li>
+     <li>ใบรับเข้า <b>${N(rc)}</b> ใบ</li>
+     <li>รายการ ledger <b>${N(tx)}</b> รายการ</li>
+   </ul>
+   <p style="margin-bottom:14px;font-size:12.8px"><b style="color:var(--gr)">จะไม่ถูกลบ:</b> ยอดสต็อกปัจจุบัน, ตัวชี้วัด Monthly KPI, สินค้า/หน่วยงาน, บัญชีผู้ใช้ทุกคน</p>
+   <p style="margin-bottom:6px;font-size:12.8px">พิมพ์รหัสผ่านบัญชีของคุณเพื่อยืนยันตัวตน:</p>
+   <input type="password" id="pgPassInput" placeholder="รหัสผ่าน" oninput="$('pgConfirmBtn').disabled=!this.value;$('pgPassErr').textContent=''">
+   <div class="loginerr" id="pgPassErr"></div>`;
+  $('mFoot').innerHTML='<button class="b2" onclick="closeM()">ยกเลิก</button><button class="br" id="pgConfirmBtn" disabled onclick="doPurgeMonth()">ยืนยันลบถาวร</button>';
+  $('mask').classList.add('on');
+}
+async function doPurgeMonth(){
+  const m=$('pgMonth').value,pass=$('pgPassInput').value;
+  $('pgConfirmBtn').disabled=true;$('pgPassErr').textContent='';
+  const{data,error}=await sbClient.rpc('fn_admin_purge_month',{p_month:m,p_password:pass});
+  if(error){$('pgPassErr').textContent=error.message;$('pgConfirmBtn').disabled=false;return;}
+  closeM();pgExportedMonth=null;
+  await fetchAll();renderAll();
+  toast('ลบข้อมูลเดือน '+mLabel(m)+' เรียบร้อย — ใบเบิก '+N(data.requisitions)+' ใบ, ใบรับ '+N(data.receives)+' ใบ, ledger '+N(data.transactions)+' รายการ');
 }
 async function saveUserRole(id){
   const role=$('ur_'+id).value;
