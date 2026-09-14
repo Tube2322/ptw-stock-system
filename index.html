@@ -196,7 +196,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
     <a data-p="lg" data-r="all,viewer"><i>≡</i><span>ประวัติเคลื่อนไหว</span></a>
     <div class="ngrp" data-r="all">ระบบและวิเคราะห์</div>
     <a data-p="kpi" data-r="all"><i>◈</i><span>Monthly KPI</span></a>
-    <a data-p="flow" data-r="all"><i>⚙</i><span>Power Automate Log</span></a>
+    <a data-p="flow" data-r="all"><i>⚙</i><span>บันทึก Flow (Run History)</span></a>
     <a data-p="dept" data-r="all"><i>⌂</i><span>หน่วยงาน</span></a>
     <div class="ngrp" data-r="all,viewer">บัญชี</div>
     <a data-p="settings" data-r="all,viewer"><i>⚿</i><span>ตั้งค่าบัญชี</span></a>
@@ -375,16 +375,20 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
 
   <!-- ========== FLOW LOG ========== -->
   <section class="page" id="p-flow">
-    <div class="grid g2">
-      <div class="card"><h3>⚙ Flow ที่ทำงานในระบบ</h3>
-        <div class="tw"><table><thead><tr><th>#</th><th>ชื่อ Flow</th><th>Trigger</th></tr></thead><tbody>
-          <tr><td>1</td><td>สร้างเลขที่ใบเบิกอัตโนมัติ</td><td>เมื่อสร้าง Requisition</td></tr>
-          <tr><td>2</td><td>เพิ่ม / ลด Stock อัตโนมัติ</td><td>เมื่อบันทึกรับเข้า / จ่ายออก</td></tr>
-          <tr><td>3</td><td>แจ้งเตือน Stock ต่ำกว่า Min</td><td>เมื่อ CurrentStock ≤ MinStock</td></tr>
-          <tr><td>4</td><td>แจ้งเตือนรายการค้างจ่าย</td><td>เมื่อมีใบเบิกสถานะรอตรวจสอบ</td></tr>
-          <tr><td>5</td><td>สรุปรายงานประจำเดือน</td><td>Recurrence — วันที่ 1 ของเดือน</td></tr>
-        </tbody></table></div></div>
-      <div class="card"><h3>บันทึกการทำงานของ Flow (Run History)</h3><div class="flowlog" id="flT"></div></div></div>
+    <div class="card" style="border-top:3px solid var(--acc)"><h3>📋 บันทึกการทำงานของ Flow (Run History)</h3>
+      <p style="font-size:12px;color:var(--mt);margin-bottom:12px">บันทึกละเอียดทุกการทำงานอัตโนมัติในระบบ — ใครทำ กดอะไร เมื่อไหร่ วันไหน เรียงล่าสุดก่อน</p>
+      <div class="rw" style="margin-bottom:12px">
+        <div style="flex:1;min-width:200px"><label>ค้นหา</label><input id="qFl" placeholder="ชื่อ Flow / รายละเอียด / ผู้ทำรายการ" oninput="rFlow()"></div>
+      </div>
+      <div class="tw"><table><thead><tr><th style="white-space:nowrap">วันที่-เวลา</th><th>Flow</th><th>รายละเอียด</th><th>ผู้ทำรายการ</th></tr></thead><tbody id="flT"></tbody></table></div></div>
+    <div class="card"><h3>⚙ Flow ที่ทำงานในระบบ (อ้างอิง)</h3>
+      <div class="tw"><table><thead><tr><th>#</th><th>ชื่อ Flow</th><th>Trigger</th></tr></thead><tbody>
+        <tr><td>1</td><td>สร้างเลขที่ใบเบิกอัตโนมัติ</td><td>เมื่อสร้าง Requisition</td></tr>
+        <tr><td>2</td><td>เพิ่ม / ลด Stock อัตโนมัติ</td><td>เมื่อบันทึกรับเข้า / จ่ายออก / จ่ายออกอนุมัติแล้ว</td></tr>
+        <tr><td>3</td><td>แจ้งเตือน Stock ต่ำกว่า Min</td><td>เมื่อ CurrentStock ≤ MinStock</td></tr>
+        <tr><td>4</td><td>อนุมัติ/ปฏิเสธ/จ่ายออก</td><td>เมื่อคลังดำเนินการกับใบเบิก</td></tr>
+        <tr><td>5</td><td>งานผู้ดูแลระบบ</td><td>แก้ไขยอดย้อนหลัง / ปรับสิทธิ์ / ลบข้อมูล</td></tr>
+      </tbody></table></div></div>
   </section>
 
   <!-- ========== หน่วยงาน ========== -->
@@ -481,7 +485,7 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clear
 function stat(p){if(p.cur<=0)return['p-zero','หมดสต็อก'];if(p.cur<=p.min)return['p-low','ต่ำกว่า Min'];return['p-ok','ปกติ'];}
 
 /* ============ 3. DATA LOAD (Supabase) ============ */
-async function flowLog(n,msg){await sbClient.from('flow_log').insert({flow_name:n,msg});}
+async function flowLog(n,msg){await sbClient.from('flow_log').insert({flow_name:n,msg,by_user:curUser?curUser.full_name:null});}
 async function fetchAll(){
   const[depR,prodR,reqR,itemR,rcvR,transR,flowR,kpiR,userR]=await Promise.all([
     sbClient.from('departments').select('*').order('code'),
@@ -505,7 +509,7 @@ async function fetchAll(){
     apvBy:r.approved_by,issDate:r.issue_date,issBy:r.issued_by,total:+r.total,items:itemsByReq[r.no]||[]}));
   S.receives=(rcvR.data||[]).map(x=>({no:x.no,date:x.rec_date,sup:x.supplier,code:x.code,name:x.name,qty:+x.qty,orderQty:+x.order_qty,pending:Math.max(0,+x.order_qty-+x.qty),price:+x.price,total:+x.total,rm:x.remark||''}));
   S.trans=(transR.data||[]).map(x=>({ts:x.ts,doc:x.doc,type:x.type,code:x.code,name:x.name,qty:+x.qty,bal:+x.balance,ref:x.ref,by:x.by}));
-  S.flow=(flowR.data||[]).map(x=>({ts:x.ts,n:x.flow_name,msg:x.msg}));
+  S.flow=(flowR.data||[]).map(x=>({ts:x.ts,n:x.flow_name,msg:x.msg,by:x.by_user||'ระบบอัตโนมัติ'}));
   S.kpi=(kpiR.data||[]).map(k=>({m:k.m,rev:+k.revenue,opd:+k.opd,ipd:+k.ipd,ipdd:+k.ipd_day}));
 }
 async function refreshData(){await fetchAll();renderAll();toast('โหลดข้อมูลล่าสุดเรียบร้อย');}
@@ -514,7 +518,7 @@ const TT={dash:['Dashboard','ภาพรวมและการวิเคร
  track:['ติดตามสถานะ','ตรวจสอบความคืบหน้าใบเบิก'],apv:['ตรวจสอบใบเบิก','ตรวจสอบรายการและอนุมัติการเบิก'],
  iss:['จ่ายออก','จ่ายวัสดุตามจำนวนจริงและตัดสต็อก'],rcv:['รับเข้า','บันทึกการรับวัสดุจากการสั่งซื้อ'],
  prod:['สินค้าคงคลัง','Products — ยอดคงเหลือและมูลค่าคลัง'],lg:['ประวัติเคลื่อนไหว','Stock Movement Ledger'],
- kpi:['Monthly KPI','ตัวชี้วัดและต้นทุนต่อหน่วยบริการ'],flow:['Power Automate','บันทึกการทำงานอัตโนมัติ'],dept:['หน่วยงาน','Departments Master'],
+ kpi:['Monthly KPI','ตัวชี้วัดและต้นทุนต่อหน่วยบริการ'],flow:['บันทึกการทำงานของ Flow (Run History)','ประวัติการทำงานอัตโนมัติแบบละเอียด — ใครทำอะไร เมื่อไหร่'],dept:['หน่วยงาน','Departments Master'],
  settings:['ตั้งค่าบัญชี','จัดการบัญชีของฉันและสิทธิ์การใช้งาน']};
 const ROLE_LABEL={all:'ผู้ดูแลระบบ (ทุกสิทธิ์)',viewer:'ผู้ชม (อ่านอย่างเดียว)'};
 function go(p){
@@ -779,7 +783,7 @@ async function doApv(no){
   if(error)return toast('ผิดพลาด: '+error.message);
   await fetchAll();renderAll();toast('อนุมัติใบเบิก '+no+' เรียบร้อย');}
 async function doRej(no){const rs=prompt('ระบุเหตุผลการปฏิเสธ:');if(rs===null)return;
-  const{error}=await sbClient.rpc('fn_reject_requisition',{p_no:no,p_reason:rs||'ไม่ระบุ'});
+  const{error}=await sbClient.rpc('fn_reject_requisition',{p_no:no,p_reason:rs||'ไม่ระบุ',p_by:curUser.full_name});
   if(error)return toast('ผิดพลาด: '+error.message);
   await fetchAll();renderAll();toast('ปฏิเสธใบเบิก '+no);}
 
@@ -983,9 +987,11 @@ function rKpi(){
 
 /* ============ 15. FLOW LOG & DEPT ============ */
 function rFlow(){
-  $('flT').innerHTML=S.flow.length?S.flow.slice(0,80).map(f=>
-   `<div><span>${dt(f.ts)}</span><b style="color:var(--acc);white-space:nowrap">${esc(f.n)}</b><span style="color:var(--tx)">${esc(f.msg)}</span></div>`).join('')
-   :'<div class="empty">ยังไม่มีบันทึกการทำงาน</div>';
+  const q=($('qFl')?$('qFl').value:'').toLowerCase();
+  const rows=S.flow.filter(f=>!q||(f.n+f.msg+f.by).toLowerCase().includes(q));
+  $('flT').innerHTML=rows.length?rows.slice(0,300).map(f=>
+   `<tr><td style="white-space:nowrap">${dt(f.ts)}</td><td><b style="color:var(--acc)">${esc(f.n)}</b></td><td>${esc(f.msg)}</td><td>${esc(f.by)}</td></tr>`).join('')
+   :'<tr><td colspan="4" class="empty">ไม่พบบันทึกการทำงานตามเงื่อนไข</td></tr>';
 }
 async function addDept(){
   const c=$('dpC').value.trim(),n=$('dpN').value.trim();
