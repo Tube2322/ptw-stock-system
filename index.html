@@ -95,6 +95,7 @@ body.kiosk .kioskbar{display:flex;align-items:center;justify-content:space-betwe
 .kioskbar b{font-size:14px}
 .kioskbar button{background:transparent;color:#9db3dd;font-size:11.5px;text-decoration:underline;padding:6px 0}
 body.kiosk .kiosk-hide{display:none}
+body.kiosk .kiosk-price{display:none}
 @media(max-width:520px){
   body.kiosk .grid.g3{grid-template-columns:1fr}
   body.kiosk .rw{flex-direction:column;align-items:stretch}
@@ -290,11 +291,11 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <button class="bp no-viewer" onclick="addRq()">+ เพิ่มรายการ</button>
       </div>
       <div class="tw" style="margin-top:12px"><table id="rqTable">
-        <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่ขอ</th><th class="kiosk-hide-col">หน่วย</th><th class="r kiosk-hide-col">ราคา/หน่วย</th><th class="r">มูลค่าประมาณ</th><th class="c">ลบ</th></tr></thead>
+        <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่ขอ</th><th class="kiosk-hide-col">หน่วย</th><th class="r kiosk-price">ราคา/หน่วย</th><th class="r kiosk-price">มูลค่าประมาณ</th><th class="c">ลบ</th></tr></thead>
         <tbody id="rqT"></tbody></table></div>
       <div style="margin-top:11px"><label>หมายเหตุ / วัตถุประสงค์การใช้งาน</label><textarea id="rqRm" rows="2"></textarea></div>
       <div class="rw" style="justify-content:flex-end;margin-top:12px">
-        <div style="font-size:13px;margin-right:12px">มูลค่าประมาณ: <b id="rqSum" style="color:var(--pp);font-size:18px">0.00</b> บาท</div>
+        <div class="kiosk-price" style="font-size:13px;margin-right:12px">มูลค่าประมาณ: <b id="rqSum" style="color:var(--pp);font-size:18px">0.00</b> บาท</div>
         <button class="b2 no-viewer" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp no-viewer" onclick="saveRq()">✓ ส่งคำขอเบิก (รอคลังตรวจสอบ)</button></div></div>
   </section>
 
@@ -740,7 +741,7 @@ function addRq(){
 function rRqCart(){
   $('rqT').innerHTML=rqCart.length?rqCart.map((r,i)=>
    `<tr><td>${i+1}</td><td><b>${r.code}</b></td><td>${r.name}</td><td class="r"><b style="color:var(--pp)">${N(r.rq)}</b></td>
-    <td class="kiosk-hide-col">${r.unit}</td><td class="r kiosk-hide-col">${M(r.price)}</td><td class="r"><b>${M(r.rq*r.price)}</b></td>
+    <td class="kiosk-hide-col">${r.unit}</td><td class="r kiosk-price">${M(r.price)}</td><td class="r kiosk-price"><b>${M(r.rq*r.price)}</b></td>
     <td class="c">${(!curUser||isAdmin())?`<button class="bx" onclick="rqCart.splice(${i},1);rRqCart()">✕</button>`:'—'}</td></tr>`).join('')
    :'<tr><td colspan="8" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่ต้องการเบิกได้ไม่จำกัดจำนวนรายการ</td></tr>';
   const sum=rqCart.reduce((s,r)=>s+r.rq*r.price,0);
