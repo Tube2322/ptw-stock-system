@@ -741,6 +741,8 @@ function addRq(){
   if(!c)return toast('กรุณาเลือกวัสดุ');
   if(q<=0)return toast('จำนวนที่ขอต้องมากกว่า 0');
   const p=P(c),ex=rqCart.find(x=>x.code===c);
+  const wantTotal=(ex?ex.rq:0)+q;
+  if(wantTotal>p.cur)return toast('สต็อกไม่พอ — คงเหลือ '+N(p.cur)+' '+p.unit+' กรุณาติดต่อแอดมิน');
   if(ex)ex.rq+=q;else rqCart.push({code:c,name:p.name,unit:p.unit,rq:q,price:p.price});
   $('rqQ').value=1;rRqCart();
 }
@@ -758,6 +760,8 @@ async function saveRq(){
   if(!rqCart.length)return toast('กรุณาเพิ่มรายการวัสดุอย่างน้อย 1 รายการ');
   if(!$('rqDate').value)return toast('กรุณาระบุวันที่ขอเบิก');
   if(!$('rqBy').value.trim())return toast('กรุณาระบุชื่อผู้ขอเบิก');
+  const short=rqCart.filter(r=>{const p=P(r.code);return !p||r.rq>p.cur;});
+  if(short.length)return toast('สต็อกไม่พอสำหรับ: '+short.map(r=>r.name).join(', ')+' — กรุณาติดต่อแอดมิน');
   const items=rqCart.map(r=>({code:r.code,name:r.name,unit:r.unit,rq:r.rq,price:r.price}));
   const{data:no,error}=await sbClient.rpc('fn_save_requisition',{p_dept:$('rqDep').value,p_by:$('rqBy').value.trim(),p_remark:$('rqRm').value,p_date:$('rqDate').value,p_items:items});
   if(error)return toast('บันทึกไม่สำเร็จ: '+error.message);
