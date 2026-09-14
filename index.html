@@ -492,6 +492,7 @@ let rqCart=[],rcCart=[],curReq=null,curUser=null;
 
 /* ============ 2. UTILITIES ============ */
 const $=i=>document.getElementById(i);
+const isAdmin=()=>!!curUser&&curUser.role==='all';
 const N=n=>Number(n||0).toLocaleString('th-TH');
 const M=n=>Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 const M0=n=>Number(n||0).toLocaleString('th-TH',{maximumFractionDigits:0});
@@ -545,7 +546,7 @@ const TT={dash:['Dashboard','ภาพรวมและการวิเคร
  settings:['ตั้งค่าบัญชี','จัดการบัญชีของฉันและสิทธิ์การใช้งาน']};
 const ROLE_LABEL={all:'ผู้ดูแลระบบ (ทุกสิทธิ์)',viewer:'ผู้ชม (อ่านอย่างเดียว)'};
 function go(p){
-  if(p==='settings'&&curUser.role!=='all')p='dash';
+  if(p==='settings'&&!isAdmin())p='dash';
   document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
   $('p-'+p).classList.add('on');$('ttl').textContent=TT[p][0];$('sub').textContent=TT[p][1];renderAll();
@@ -710,7 +711,7 @@ function rRqCart(){
   $('rqT').innerHTML=rqCart.length?rqCart.map((r,i)=>
    `<tr><td>${i+1}</td><td><b>${r.code}</b></td><td>${r.name}</td><td class="r"><b style="color:var(--pp)">${N(r.rq)}</b></td>
     <td class="kiosk-hide-col">${r.unit}</td><td class="r kiosk-hide-col">${M(r.price)}</td><td class="r"><b>${M(r.rq*r.price)}</b></td>
-    <td class="c">${curUser.role==='all'?`<button class="bx" onclick="rqCart.splice(${i},1);rRqCart()">✕</button>`:'—'}</td></tr>`).join('')
+    <td class="c">${(!curUser||isAdmin())?`<button class="bx" onclick="rqCart.splice(${i},1);rRqCart()">✕</button>`:'—'}</td></tr>`).join('')
    :'<tr><td colspan="8" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่ต้องการเบิกได้ไม่จำกัดจำนวนรายการ</td></tr>';
   const sum=rqCart.reduce((s,r)=>s+r.rq*r.price,0);
   $('rqSum').textContent=M(sum);
@@ -743,7 +744,7 @@ function rTrack(){
 let editReqCode=null;
 function viewReq(no){
   const r=R(no);curReq=r;
-  const canEdit=curUser.role==='all'&&r.status===ST.I;
+  const canEdit=isAdmin()&&r.status===ST.I;
   $('mTtl').textContent='รายละเอียดใบเบิก '+no;
   $('mBody').innerHTML=`
    <div class="grid g2" style="margin-bottom:12px;font-size:12.8px">
@@ -798,7 +799,7 @@ function rApv(){
      <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td>
      <td class="c">${short.length?`<span class="pill p-low">ไม่พอ ${short.length} รายการ</span>`:'<span class="pill p-in">เพียงพอ</span>'}</td>
      <td class="c"><button class="b2" onclick="viewReq('${r.no}')">ดู</button>
-      ${curUser.role==='all'?`<button class="b1" onclick="doApv('${r.no}')">อนุมัติ</button>
+      ${isAdmin()?`<button class="b1" onclick="doApv('${r.no}')">อนุมัติ</button>
       <button class="bx" onclick="doRej('${r.no}')">ปฏิเสธ</button>`:''}</td></tr>`;}).join('')
    :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอตรวจสอบ</td></tr>';
 }
@@ -818,7 +819,7 @@ function rIss(){
     const est=r.items.reduce((s,i)=>s+i.rq*i.price,0);
     return `<tr><td><b>${esc(r.no)}</b></td><td>${dd(r.date)}</td><td>${esc(r.dep)}</td><td>${esc(r.by)}</td>
      <td class="c">${r.items.length}</td><td class="r"><b>${M(est)}</b></td><td>${esc(r.apvBy)||'—'}</td>
-     <td class="c">${curUser.role==='all'?`<button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button>`:'—'}</td></tr>`;}).join('')
+     <td class="c">${isAdmin()?`<button class="bg" onclick="openIss('${r.no}')">▲ จ่ายออก</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="8" class="empty">ไม่มีใบเบิกรอจ่ายออก</td></tr>';
   const h=S.reqs.filter(r=>r.status===ST.I).slice(0,12);
   $('issHT').innerHTML=h.length?h.map(r=>{
@@ -880,7 +881,7 @@ function rRcCart(){
     <td class="r"><b style="color:var(--gr)">${N(r.qty)}</b></td>
     <td class="r">${pend?'<span class="pill p-low">'+N(pend)+'</span>':'—'}</td>
     <td>${esc(r.unit)}</td><td class="r">${M(r.price)}</td><td class="r"><b>${M(r.qty*r.price)}</b></td>
-    <td class="c">${curUser.role==='all'?`<button class="bx" onclick="rcCart.splice(${i},1);rRcCart()">✕</button>`:'—'}</td></tr>`;}).join('')
+    <td class="c">${(!curUser||isAdmin())?`<button class="bx" onclick="rcCart.splice(${i},1);rRcCart()">✕</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="10" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่รับเข้าคลัง</td></tr>';
   $('rcSum').textContent=M(rcCart.reduce((s,r)=>s+r.qty*r.price,0));
 }
@@ -918,7 +919,7 @@ function rProd(){
      <td><div class="bar"><i style="width:${pct}%;background:${col}"></i></div></td>
      <td class="r">${N(p.min)}</td><td class="r">${p.reorder>0?N(p.reorder):'—'}</td><td class="r">${M(p.price)}</td><td class="r"><b>${M(p.cur*p.price)}</b></td>
      <td class="c">${p.act==1?`<span class="pill ${c}">${t}</span>`:'<span class="pill p-off">ปิดใช้งาน</span>'}${reorderFlag}</td>
-     <td class="c">${curUser.role==='all'?`<button class="b2" onclick="openPd(${p.id})">แก้ไข</button> <button class="bx" onclick="delPd(${p.id})">ลบ</button>`:'—'}</td></tr>`;}).join('')
+     <td class="c">${isAdmin()?`<button class="b2" onclick="openPd(${p.id})">แก้ไข</button> <button class="bx" onclick="delPd(${p.id})">ลบ</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="13" class="empty">ไม่พบข้อมูลวัสดุ</td></tr>';
 }
 function openPd(id){
@@ -1005,7 +1006,7 @@ function rKpi(){
      <td class="r"><b>${k.rev?(c/k.rev*100).toFixed(2):'0.00'}%</b></td>
      <td class="r">${N(k.opd)}</td><td class="r">${N(k.ipd)}</td><td class="r">${N(k.ipdd)}</td>
      <td class="r">${M(k.opd?c/k.opd:0)}</td><td class="r">${M(k.ipd?c/k.ipd:0)}</td><td class="r">${M(k.ipdd?c/k.ipdd:0)}</td>
-     <td class="c">${curUser.role==='all'?`<button class="bx" onclick="delKpi('${k.m}')">ลบ</button>`:'—'}</td></tr>`;}).join('')
+     <td class="c">${isAdmin()?`<button class="bx" onclick="delKpi('${k.m}')">ลบ</button>`:'—'}</td></tr>`;}).join('')
    :'<tr><td colspan="11" class="empty">ยังไม่มีข้อมูลตัวชี้วัด</td></tr>';
 }
 
@@ -1041,7 +1042,7 @@ function rDept(){
   $('dpT').innerHTML=S.depts.map(d=>{const rs=S.reqs.filter(r=>r.dep===d.n),is=rs.filter(r=>r.status===ST.I);
     return `<tr><td><b>${esc(d.c)}</b></td><td>${esc(d.n)}</td><td class="r">${N(rs.length)}</td><td class="r">${N(is.length)}</td>
      <td class="r"><b>${M(is.reduce((s,r)=>s+r.total,0))}</b></td>
-     <td class="c">${curUser.role==='all'?`<button class="bx" onclick="delDept('${d.c}')">ลบ</button>`:'—'}</td></tr>`;}).join('');
+     <td class="c">${isAdmin()?`<button class="bx" onclick="delDept('${d.c}')">ลบ</button>`:'—'}</td></tr>`;}).join('');
 }
 
 /* ============ 15b. ACCOUNT SETTINGS & USER MANAGEMENT ============ */
