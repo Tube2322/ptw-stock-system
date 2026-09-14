@@ -1045,6 +1045,8 @@ async function addDept(){
 }
 async function delDept(c){
   if(S.reqs.some(r=>r.depCode===c))return toast('ไม่สามารถลบได้ — มีประวัติการเบิกจ่าย');
+  const d=S.depts.find(x=>x.c===c);
+  if(!confirm('ยืนยันลบหน่วยงาน\n\nรหัส: '+c+'\nชื่อ: '+(d?d.n:'')+'\n\nลบแล้วกู้คืนไม่ได้ — หน่วยงานนี้จะหายจาก dropdown เลือกหน่วยงานในหน้าทำใบเบิกทันที'))return;
   const{error}=await sbClient.from('departments').delete().eq('code',c);
   if(error)return toast('ผิดพลาด: '+error.message);
   await fetchAll();renderAll();toast('ลบหน่วยงานเรียบร้อย');
