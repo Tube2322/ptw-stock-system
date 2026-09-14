@@ -167,23 +167,23 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <option value="viewer">ผู้ชม (อ่านอย่างเดียว)</option>
     </select></div>
   <nav id="nav">
-    <div class="ngrp" data-r="all,mgr,wh,pur,viewer">ภาพรวม</div>
-    <a class="on" data-p="dash" data-r="all,mgr,wh,pur,viewer"><i>▦</i><span>Dashboard</span></a>
-    <div class="ngrp" data-r="all,req,wh">งานผู้เบิก</div>
-    <a data-p="req" data-r="all,req"><i>✎</i><span>ทำใบเบิก</span></a>
-    <a data-p="track" data-r="all,req,wh"><i>◷</i><span>ติดตามสถานะ</span></a>
-    <div class="ngrp" data-r="all,wh,pur,viewer">งานคลังสินค้า</div>
-    <a data-p="apv" data-r="all,wh"><i>☑</i><span>ตรวจสอบใบเบิก</span><b id="bg1"></b></a>
-    <a data-p="iss" data-r="all,wh"><i>▲</i><span>จ่ายออก</span><b id="bg2"></b></a>
-    <a data-p="rcv" data-r="all,wh,pur"><i>▼</i><span>รับเข้า</span></a>
-    <a data-p="prod" data-r="all,wh,pur,mgr"><i>▣</i><span>สินค้าคงคลัง</span></a>
-    <a data-p="lg" data-r="all,wh,pur,mgr,viewer"><i>≡</i><span>ประวัติเคลื่อนไหว</span></a>
-    <div class="ngrp" data-r="all,mgr,wh">ระบบและวิเคราะห์</div>
-    <a data-p="kpi" data-r="all,mgr"><i>◈</i><span>Monthly KPI</span></a>
-    <a data-p="flow" data-r="all,wh"><i>⚙</i><span>Power Automate Log</span></a>
+    <div class="ngrp" data-r="all,viewer">ภาพรวม</div>
+    <a class="on" data-p="dash" data-r="all,viewer"><i>▦</i><span>Dashboard</span></a>
+    <div class="ngrp" data-r="all">งานผู้เบิก</div>
+    <a data-p="req" data-r="all"><i>✎</i><span>ทำใบเบิก</span></a>
+    <a data-p="track" data-r="all"><i>◷</i><span>ติดตามสถานะ</span></a>
+    <div class="ngrp" data-r="all,viewer">งานคลังสินค้า</div>
+    <a data-p="apv" data-r="all"><i>☑</i><span>ตรวจสอบใบเบิก</span><b id="bg1"></b></a>
+    <a data-p="iss" data-r="all"><i>▲</i><span>จ่ายออก</span><b id="bg2"></b></a>
+    <a data-p="rcv" data-r="all"><i>▼</i><span>รับเข้า</span></a>
+    <a data-p="prod" data-r="all"><i>▣</i><span>สินค้าคงคลัง</span></a>
+    <a data-p="lg" data-r="all,viewer"><i>≡</i><span>ประวัติเคลื่อนไหว</span></a>
+    <div class="ngrp" data-r="all">ระบบและวิเคราะห์</div>
+    <a data-p="kpi" data-r="all"><i>◈</i><span>Monthly KPI</span></a>
+    <a data-p="flow" data-r="all"><i>⚙</i><span>Power Automate Log</span></a>
     <a data-p="dept" data-r="all"><i>⌂</i><span>หน่วยงาน</span></a>
-    <div class="ngrp" data-r="all,req,wh,pur,mgr,viewer">บัญชี</div>
-    <a data-p="settings" data-r="all,req,wh,pur,mgr,viewer"><i>⚿</i><span>ตั้งค่าบัญชี</span></a>
+    <div class="ngrp" data-r="all,viewer">บัญชี</div>
+    <a data-p="settings" data-r="all,viewer"><i>⚿</i><span>ตั้งค่าบัญชี</span></a>
   </nav>
   <div class="userbadge"><span>เข้าสู่ระบบ: <b id="loName">—</b></span><button onclick="doLogout()">ออกจากระบบ</button></div>
   <div class="sf">v2.0 · Requisition Workflow</div>
@@ -216,6 +216,9 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
     </div>
     <div class="card"><h3>ต้นทุนจ่ายออกแยกตามหน่วยงาน</h3>
       <div class="tw"><table><thead><tr><th>หน่วยงาน</th><th class="r">ใบเบิก</th><th class="r">มูลค่าเบิก (บาท)</th><th style="width:180px">สัดส่วน</th></tr></thead><tbody id="depCT"></tbody></table></div></div>
+    <div class="card"><h3>ต้นทุนวัสดุแยกหมวดหมู่ — ผ้า vs สิ้นเปลือง
+      <select id="kpiGran" onchange="rDash()" style="width:150px"><option value="day">รายวัน (14 วันล่าสุด)</option><option value="week">รายสัปดาห์ (8 สัปดาห์ล่าสุด)</option></select></h3>
+      <div class="tw"><table><thead><tr><th>ช่วงเวลา</th><th class="r">ค่าใช้จ่ายผ้า</th><th class="r">ค่าใช้จ่ายสิ้นเปลือง</th><th class="r">รวม</th></tr></thead><tbody id="catT"></tbody></table></div></div>
   </section>
 
   <!-- ========== ทำใบเบิก ========== -->
@@ -311,7 +314,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <div style="flex:1;min-width:190px"><input id="qPd" placeholder="🔍 ค้นหารหัส / ชื่อวัสดุ..." oninput="rProd()"></div>
         <select id="fPd" style="width:165px" onchange="rProd()"><option value="">ทุกสถานะ</option><option value="ok">ปกติ</option><option value="low">ต่ำกว่า Min</option><option value="zero">หมดสต็อก</option></select>
         <button class="b1" onclick="openPd()">+ เพิ่มวัสดุ</button></div>
-      <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อวัสดุ</th><th>หน่วย</th><th class="r">ยอดยกมา</th><th class="r">คงเหลือ</th><th style="width:118px">ระดับสต็อก</th><th class="r">Min</th><th class="r">Reorder</th><th class="r">ราคา/หน่วย</th><th class="r">มูลค่ารวม</th><th class="c">สถานะ</th><th class="c">จัดการ</th></tr></thead><tbody id="pdT"></tbody></table></div></div>
+      <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อวัสดุ</th><th>หมวดหมู่</th><th>หน่วย</th><th class="r">ยอดยกมา</th><th class="r">คงเหลือ</th><th style="width:118px">ระดับสต็อก</th><th class="r">Min</th><th class="r">Reorder</th><th class="r">ราคา/หน่วย</th><th class="r">มูลค่ารวม</th><th class="c">สถานะ</th><th class="c">จัดการ</th></tr></thead><tbody id="pdT"></tbody></table></div></div>
   </section>
 
   <!-- ========== LEDGER ========== -->
@@ -462,7 +465,7 @@ async function fetchAll(){
   S.users=(userR.data||[]).map(u=>({id:u.id,username:u.username,full_name:u.full_name,role:u.role}));
   S.depts=(depR.data||[]).map(d=>({c:d.code,n:d.name}));
   const depName=c=>{const d=S.depts.find(x=>x.c===c);return d?d.n:c;};
-  S.products=(prodR.data||[]).map(p=>({id:p.id,code:p.code,name:p.name,unit:p.unit,price:+p.price,open:+p.open_qty,cur:+p.cur_qty,min:+p.min_qty,reorder:+p.reorder_point,act:p.active?1:0}));
+  S.products=(prodR.data||[]).map(p=>({id:p.id,code:p.code,name:p.name,unit:p.unit,price:+p.price,open:+p.open_qty,cur:+p.cur_qty,min:+p.min_qty,reorder:+p.reorder_point,act:p.active?1:0,category:p.category||'สิ้นเปลือง'}));
   const itemsByReq={};
   (itemR.data||[]).forEach(it=>{(itemsByReq[it.req_no]=itemsByReq[it.req_no]||[]).push({code:it.code,name:it.name,unit:it.unit,rq:+it.rq,iq:+it.iq,price:+it.price,total:+it.total});});
   S.reqs=(reqR.data||[]).map(r=>({no:r.no,date:r.req_date,dep:depName(r.dept_code),depCode:r.dept_code,by:r.requested_by,status:r.status,rm:r.remark||'',
@@ -515,7 +518,8 @@ function rDash(){
    <div class="kpi"><div class="l">ผู้ป่วยนอก (OPD)</div><div class="v">${N(agg.opd)}</div><div class="s">ต้นทุน/ครั้ง ${M(agg.opd?agg.cost/agg.opd:0)} บาท</div></div>
    <div class="kpi"><div class="l">ผู้ป่วยใน (IPD)</div><div class="v">${N(agg.ipd)}</div><div class="s">ต้นทุน/ราย ${M(agg.ipd?agg.cost/agg.ipd:0)} บาท</div></div>
    <div class="kpi"><div class="l">วันนอน (IPD Day)</div><div class="v">${N(agg.ipdd)}</div><div class="s">ต้นทุน/วันนอน ${M(agg.ipdd?agg.cost/agg.ipdd:0)} บาท</div></div>
-   <div class="kpi g"><div class="l">ใบเบิกค้างดำเนินการ</div><div class="v">${N(S.reqs.filter(r=>r.status===ST.P||r.status===ST.A).length)}</div><div class="s">รายการรอตรวจสอบ/รอจ่าย</div></div>`;
+   <div class="kpi g"><div class="l">ใบเบิกค้างดำเนินการ</div><div class="v">${N(S.reqs.filter(r=>r.status===ST.P||r.status===ST.A).length)}</div><div class="s">รายการรอตรวจสอบ/รอจ่าย</div></div>
+   <div class="kpi"><div class="l">จำนวนการเบิกทั้งหมด</div><div class="v">${N(S.reqs.filter(r=>r.status===ST.I&&(sel==='ALL'||ym(r.issDate)===sel)).length)}</div><div class="s">ใบเบิกที่จ่ายแล้ว (ช่วงที่เลือก)</div></div>`;
 
   const actProd=S.products.filter(p=>p.act==1);
   const zeroN=actProd.filter(p=>p.cur<=0).length, lowN=actProd.filter(p=>p.cur>0&&p.cur<=p.min).length, okN=actProd.length-zeroN-lowN;
@@ -565,6 +569,36 @@ function rDash(){
      <td><div class="bar"><i style="width:${x.v/tot*100}%;background:var(--pp)"></i></div>
      <small style="color:var(--mt)">${(x.v/tot*100).toFixed(1)}%</small></td></tr>`).join('')
     :'<tr><td colspan="4" class="empty">ยังไม่มีข้อมูลการจ่ายออกในช่วงที่เลือก</td></tr>';
+  rCatCost();
+}
+function isoWeekKey(d){
+  const dt=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=(dt.getUTCDay()+6)%7;dt.setUTCDate(dt.getUTCDate()-day+3);
+  const firstThu=new Date(Date.UTC(dt.getUTCFullYear(),0,4));
+  const week=1+Math.round(((dt-firstThu)/86400000-3+((firstThu.getUTCDay()+6)%7))/7);
+  return dt.getUTCFullYear()+'-W'+String(week).padStart(2,'0');
+}
+function rCatCost(){
+  const gran=$('kpiGran')?$('kpiGran').value:'day';
+  const issued=S.reqs.filter(r=>r.status===ST.I&&r.issDate);
+  const buckets={};
+  const keyOf=gran==='day'?(r=>String(r.issDate).slice(0,10)):(r=>isoWeekKey(new Date(r.issDate)));
+  issued.forEach(r=>r.items.forEach(i=>{
+    const k=keyOf(r);const p=P(i.code);const cat=(p&&p.category==='ผ้า')?'fab':'con';
+    buckets[k]=buckets[k]||{fab:0,con:0};buckets[k][cat]+=i.total||0;
+  }));
+  let keys;
+  if(gran==='day'){
+    keys=[];const d=new Date();for(let n=0;n<14;n++){const x=new Date(d);x.setDate(d.getDate()-n);keys.push(x.toISOString().slice(0,10));}
+  }else{
+    keys=[];const d=new Date();for(let n=0;n<8;n++){const x=new Date(d);x.setDate(d.getDate()-n*7);keys.push(isoWeekKey(x));}
+    keys=[...new Set(keys)];
+  }
+  $('catT').innerHTML=keys.map(k=>{
+    const b=buckets[k]||{fab:0,con:0};
+    const label=gran==='day'?new Date(k).toLocaleDateString('th-TH',{day:'2-digit',month:'short'}):k;
+    return `<tr><td>${label}</td><td class="r">${M(b.fab)}</td><td class="r">${M(b.con)}</td><td class="r"><b>${M(b.fab+b.con)}</b></td></tr>`;
+  }).join('');
 }
 
 /* ============ 7. REQUISITION (ผู้เบิก) ============ */
@@ -788,13 +822,13 @@ function rProd(){
     const[c,t]=stat(p),base=Math.max(p.open,p.cur,p.min*2,1),pct=Math.min(100,p.cur/base*100);
     const col=c==='p-zero'?'var(--rd)':c==='p-low'?'var(--or)':'var(--gr)';
     const reorderFlag=p.reorder>0&&p.cur<=p.reorder?'<br><span class="pill p-low" style="margin-top:2px">ควรสั่งซื้อ</span>':'';
-    return `<tr><td><b>${esc(p.code)}</b></td><td>${esc(p.name)}</td><td>${esc(p.unit)}</td><td class="r">${N(p.open)}</td>
+    return `<tr><td><b>${esc(p.code)}</b></td><td>${esc(p.name)}</td><td>${p.category==='ผ้า'?'<span class="pill p-ok">ผ้า</span>':'<span class="pill p-off">สิ้นเปลือง</span>'}</td><td>${esc(p.unit)}</td><td class="r">${N(p.open)}</td>
      <td class="r"><b style="font-size:13.5px">${N(p.cur)}</b></td>
      <td><div class="bar"><i style="width:${pct}%;background:${col}"></i></div></td>
      <td class="r">${N(p.min)}</td><td class="r">${p.reorder>0?N(p.reorder):'—'}</td><td class="r">${M(p.price)}</td><td class="r"><b>${M(p.cur*p.price)}</b></td>
      <td class="c">${p.act==1?`<span class="pill ${c}">${t}</span>`:'<span class="pill p-off">ปิดใช้งาน</span>'}${reorderFlag}</td>
      <td class="c"><button class="b2" onclick="openPd(${p.id})">แก้ไข</button> <button class="bx" onclick="delPd(${p.id})">ลบ</button></td></tr>`;}).join('')
-   :'<tr><td colspan="12" class="empty">ไม่พบข้อมูลวัสดุ</td></tr>';
+   :'<tr><td colspan="13" class="empty">ไม่พบข้อมูลวัสดุ</td></tr>';
 }
 function openPd(id){
   const p=id?S.products.find(x=>x.id===id):null;
@@ -808,6 +842,9 @@ function openPd(id){
     <div><label>OpeningStock (ยอดยกมา)</label><input type="number" id="fO" value="${p?p.open:0}"></div>
     <div><label>MinStock (จุดแจ้งเตือน)</label><input type="number" id="fM" value="${p?p.min:0}"></div>
     <div><label>ReorderPoint (จุดสั่งซื้อ)</label><input type="number" id="fR" value="${p?p.reorder:0}"></div>
+    <div><label>หมวดหมู่ (สำหรับแยกต้นทุน)</label><select id="fCat">
+      <option value="สิ้นเปลือง" ${!p||p.category!=='ผ้า'?'selected':''}>สิ้นเปลือง</option>
+      <option value="ผ้า" ${p&&p.category==='ผ้า'?'selected':''}>ผ้า (ผ้าปู/ผ้าคลุม/เครื่องนุ่งห่ม)</option></select></div>
     <div><label>Active</label><select id="fA"><option value="1" ${p&&p.act==0?'':'selected'}>ใช้งาน</option><option value="0" ${p&&p.act==0?'selected':''}>ยกเลิกใช้งาน</option></select></div>
     ${p?`<div><label>CurrentStock (ปรับยอดคงเหลือ)</label><input type="number" id="fCur" value="${p.cur}"></div>`:''}
    </div>`;
@@ -817,7 +854,7 @@ function openPd(id){
 async function savePd(){
   const c=$('fC').value.trim(),n=$('fN').value.trim();
   if(!c||!n)return toast('กรุณาระบุรหัสและชื่อวัสดุ');
-  const id=$('fId').value,o={code:c,name:n,unit:$('fU').value.trim()||'ชิ้น',price:+$('fP').value,open_qty:+$('fO').value,min_qty:+$('fM').value,reorder_point:+$('fR').value,active:+$('fA').value===1};
+  const id=$('fId').value,o={code:c,name:n,unit:$('fU').value.trim()||'ชิ้น',price:+$('fP').value,open_qty:+$('fO').value,min_qty:+$('fM').value,reorder_point:+$('fR').value,active:+$('fA').value===1,category:$('fCat').value};
   let err;
   if(id){
     const p=S.products.find(x=>x.id==id);const nc=$('fCur')?+$('fCur').value:p.cur;
@@ -1142,6 +1179,14 @@ async function boot(){
   if(session){await enterApp(session.user);}else{$('loginScreen').classList.remove('off');}
 }
 boot();
+sbClient.auth.onAuthStateChange((event)=>{
+  if(event==='SIGNED_OUT'&&curUser){curUser=null;alert('เซสชันหมดอายุหรือถูกออกจากระบบ กรุณาเข้าสู่ระบบใหม่');location.reload();}
+});
+setInterval(async()=>{
+  if(!curUser)return;
+  const{data:{session}}=await sbClient.auth.getSession();
+  if(!session){curUser=null;alert('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่');location.reload();}
+},5*60*1000);
 </script>
 </body>
 </html>
