@@ -227,7 +227,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <div><b>1. เลือกหน่วยงาน</b>ระบุแผนกผู้ขอเบิก</div>
       <div style="border-left-color:var(--pp)"><b>2. เลือกวัสดุ</b>เพิ่มได้ไม่จำกัดรายการ</div>
       <div style="border-left-color:var(--or)"><b>3. ระบุจำนวน</b>จำนวนที่ต้องการ</div>
-      <div style="border-left-color:var(--gr)"><b>4. บันทึกเบิก</b>ระบบออกเลขที่และตัดสต็อกอัตโนมัติทันที</div>
+      <div style="border-left-color:var(--gr)"><b>4. ส่งคำขอเบิก</b>ระบบออกเลขที่ให้ทันที — คลังตรวจสอบและอนุมัติก่อนตัดสต็อก</div>
     </div>
     <div class="card introcard"><h3>จุดเข้าใช้งานสำหรับผู้เบิก (ไม่ต้องมี Outlook)</h3>
       <div class="qr"><img id="qrimg" width="132" height="132" alt="QR">
@@ -254,7 +254,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <div style="margin-top:11px"><label>หมายเหตุ / วัตถุประสงค์การใช้งาน</label><textarea id="rqRm" rows="2"></textarea></div>
       <div class="rw" style="justify-content:flex-end;margin-top:12px">
         <div style="font-size:13px;margin-right:12px">มูลค่าประมาณ: <b id="rqSum" style="color:var(--pp);font-size:18px">0.00</b> บาท</div>
-        <button class="b2" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp" onclick="saveRq()">✓ บันทึกเบิก (ตัดสต็อกทันที)</button></div></div>
+        <button class="b2" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp" onclick="saveRq()">✓ ส่งคำขอเบิก (รอคลังตรวจสอบ)</button></div></div>
   </section>
 
   <!-- ========== ติดตามสถานะ ========== -->
@@ -477,7 +477,7 @@ async function fetchAll(){
 }
 async function refreshData(){await fetchAll();renderAll();toast('โหลดข้อมูลล่าสุดเรียบร้อย');}
 /* ============ 5. NAVIGATION & ROLE ============ */
-const TT={dash:['Dashboard','ภาพรวมและการวิเคราะห์ต้นทุนวัสดุ'],req:['ทำใบเบิก','บันทึกเบิกวัสดุ — ตัดสต็อกอัตโนมัติทันทีเมื่อบันทึก'],
+const TT={dash:['Dashboard','ภาพรวมและการวิเคราะห์ต้นทุนวัสดุ'],req:['ทำใบเบิก','ส่งคำขอเบิกวัสดุ — คลังตรวจสอบและอนุมัติก่อนตัดสต็อก'],
  track:['ติดตามสถานะ','ตรวจสอบความคืบหน้าใบเบิก'],apv:['ตรวจสอบใบเบิก','ตรวจสอบรายการและอนุมัติการเบิก'],
  iss:['จ่ายออก','จ่ายวัสดุตามจำนวนจริงและตัดสต็อก'],rcv:['รับเข้า','บันทึกการรับวัสดุจากการสั่งซื้อ'],
  prod:['สินค้าคงคลัง','Products — ยอดคงเหลือและมูลค่าคลัง'],lg:['ประวัติเคลื่อนไหว','Stock Movement Ledger'],
@@ -632,7 +632,7 @@ async function saveRq(){
   const items=rqCart.map(r=>({code:r.code,name:r.name,unit:r.unit,rq:r.rq,price:r.price}));
   const{data:no,error}=await sbClient.rpc('fn_save_requisition',{p_dept:$('rqDep').value,p_by:$('rqBy').value.trim(),p_remark:$('rqRm').value,p_date:$('rqDate').value,p_items:items});
   if(error)return toast('บันทึกไม่สำเร็จ: '+error.message);
-  clrRq();await fetchAll();renderAll();toast('บันทึกเบิก '+no+' เรียบร้อย — ตัดสต็อกอัตโนมัติแล้ว');
+  clrRq();await fetchAll();renderAll();toast('ส่งคำขอเบิก '+no+' เรียบร้อย — รอคลังตรวจสอบก่อนตัดสต็อก');
 }
 function clrRq(){rqCart=[];$('rqRm').value='';$('rqDate').value=today();rRqCart();}
 
