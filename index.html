@@ -1032,11 +1032,14 @@ function rSettings(){
   $('userMgmtCard').classList.toggle('hide',curUser.role!=='all');
   $('purgeMonthCard').classList.toggle('hide',curUser.role!=='all');
   if(curUser.role==='all'){
-    $('userT').innerHTML=S.users.map(u=>`<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.full_name)}</td>
+    const adminCount=S.users.filter(u=>u.role==='all').length;
+    $('userT').innerHTML=S.users.map(u=>{
+      const isLastAdminSelf=u.id===curUser.id&&u.role==='all'&&adminCount<=1;
+      return `<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.full_name)}</td>
       <td class="c"><span class="pill p-ok">${ROLE_LABEL[u.role]||u.role}</span></td>
-      <td><select id="ur_${u.id}"><option value="viewer" ${u.role==='viewer'?'selected':''}>ผู้ชม (อ่านอย่างเดียว)</option>
+      <td><select id="ur_${u.id}" ${isLastAdminSelf?'disabled':''}><option value="viewer" ${u.role==='viewer'?'selected':''}>ผู้ชม (อ่านอย่างเดียว)</option>
         <option value="all" ${u.role==='all'?'selected':''}>ผู้ดูแลระบบ (ทุกสิทธิ์)</option></select></td>
-      <td class="c"><button class="b1" onclick="saveUserRole('${u.id}')" ${u.id===curUser.id?'disabled title="แก้สิทธิ์ตัวเองไม่ได้"':''}>บันทึก</button></td></tr>`).join('');
+      <td class="c"><button class="b1" onclick="saveUserRole('${u.id}')" ${isLastAdminSelf?'disabled title="ต้องมีผู้ดูแลระบบเหลืออย่างน้อย 1 คน — เลื่อนสิทธิ์บัญชีอื่นเป็นแอดมินก่อน ถึงจะลดสิทธิ์ตัวเองได้"':''}>บันทึก</button></td></tr>`;}).join('');
     rPurgeMonth();
   }
 }
