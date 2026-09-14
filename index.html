@@ -27,11 +27,16 @@ main{flex:1;padding:20px 24px;overflow:auto;max-width:calc(100vw - 250px)}
 .page{display:none}.page.on{display:block}
 .card{background:var(--cd);border:1px solid var(--ln);border-radius:10px;padding:16px;margin-bottom:14px}
 .card h3{font-size:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin-bottom:14px}
-.kpi{background:var(--cd);border:1px solid var(--ln);border-radius:10px;padding:13px 15px;border-left:4px solid var(--acc)}
+.kgrp{font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px}
+.kgrp:first-child{margin-top:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:14px;margin-bottom:6px}
+.kpi{background:var(--cd);border:1px solid var(--ln);border-radius:12px;padding:15px 17px;border-left:4px solid var(--ln);
+  box-shadow:0 1px 3px rgba(20,40,90,.05)}
+.kpi.n{border-left-color:#c7d3e6}
 .kpi.g{border-left-color:var(--gr)}.kpi.r{border-left-color:var(--rd)}.kpi.y{border-left-color:var(--or)}.kpi.p{border-left-color:var(--pp)}
-.kpi .l{font-size:11px;color:var(--mt);text-transform:uppercase;letter-spacing:.3px}
-.kpi .v{font-size:23px;font-weight:700;margin-top:4px}.kpi .s{font-size:11px;color:var(--mt);margin-top:2px}
+.kpi .l{font-size:11px;color:var(--mt);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.kpi .v{font-size:25px;font-weight:800;margin-top:5px;letter-spacing:-.2px}.kpi .s{font-size:11px;color:var(--mt);margin-top:3px}
+.kpi .trend{font-size:11px;margin-top:5px;font-weight:600;white-space:nowrap}
 table{width:100%;border-collapse:collapse;font-size:12.8px}
 th{background:#f7f9fc;text-align:left;padding:8px 9px;font-size:11px;color:var(--mt);text-transform:uppercase;border-bottom:1px solid var(--ln);white-space:nowrap}
 td{padding:8px 9px;border-bottom:1px solid #eef2f7;vertical-align:middle}
@@ -208,10 +213,17 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
 
   <!-- ========== DASHBOARD ========== -->
   <section class="page on" id="p-dash">
-    <div class="rw" style="margin-bottom:12px"><div style="width:200px"><label>เลือกเดือนวิเคราะห์</label><select id="mSel" onchange="rDash()"></select></div></div>
+    <div class="rw" style="margin-bottom:12px;align-items:center">
+      <div style="width:200px"><label>เลือกเดือนวิเคราะห์</label><select id="mSel" onchange="rDash()"></select></div>
+      <div style="font-size:11px;color:var(--mt);margin-left:auto" id="dashAsOf"></div>
+    </div>
+    <div class="kgrp">ภาพรวมการเงิน</div>
     <div class="kpis" id="k1"></div>
+    <div class="kgrp">ผู้ป่วยและใบเบิก</div>
     <div class="kpis" id="k2"></div>
+    <div class="kgrp">สต็อกสินค้า</div>
     <div class="kpis" id="k3"></div>
+    <div class="kgrp">การรับเข้า</div>
     <div class="kpis" id="k4"></div>
     <div class="grid g2">
       <div class="card"><h3>รายได้ vs ต้นทุนวัสดุ (รายเดือน)
@@ -227,6 +239,8 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
     </div>
     <div class="card"><h3>ต้นทุนจ่ายออกแยกตามหน่วยงาน</h3>
       <div class="tw"><table><thead><tr><th>หน่วยงาน</th><th class="r">ใบเบิก</th><th class="r">มูลค่าเบิก (บาท)</th><th style="width:180px">สัดส่วน</th></tr></thead><tbody id="depCT"></tbody></table></div></div>
+    <div class="card"><h3>สินค้าที่เบิกมากที่สุด (Top 10) <span style="font-weight:400;font-size:10.5px;color:var(--mt)">ตามช่วงที่เลือกด้านบน</span></h3>
+      <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่เบิก</th><th class="r">มูลค่ารวม (บาท)</th><th style="width:150px">สัดส่วน</th></tr></thead><tbody id="topItemsT"></tbody></table></div></div>
     <div class="card"><h3>ต้นทุนวัสดุแยกหมวดหมู่ — ผ้า vs สิ้นเปลือง
       <select id="kpiGran" onchange="rDash()" style="width:150px"><option value="day">รายวัน (14 วันล่าสุด)</option><option value="week">รายสัปดาห์ (8 สัปดาห์ล่าสุด)</option></select></h3>
       <div class="tw"><table><thead><tr><th>ช่วงเวลา</th><th class="r">ค่าใช้จ่ายผ้า</th><th class="r">ค่าใช้จ่ายสิ้นเปลือง</th><th class="r">รวม</th></tr></thead><tbody id="catT"></tbody></table></div></div>
@@ -528,33 +542,48 @@ function rDash(){
   const rows=sel==='ALL'?S.kpi:S.kpi.filter(k=>k.m===sel);
   const agg=rows.reduce((a,k)=>({rev:a.rev+k.rev,opd:a.opd+k.opd,ipd:a.ipd+k.ipd,ipdd:a.ipdd+k.ipdd,cost:a.cost+monthCost(k.m)}),{rev:0,opd:0,ipd:0,ipdd:0,cost:0});
   const pct=agg.rev?agg.cost/agg.rev*100:0;
+  const pctCls=pct<8?'g':pct<=12?'y':'r';
+  // MoM (เทียบเดือนก่อนหน้า) — มีความหมายเฉพาะตอนเลือกเดือนใดเดือนหนึ่ง ไม่ใช่ "ทุกเดือน (รวม)"
+  let prevAgg=null;
+  if(sel!=='ALL'){
+    const idx=ms.indexOf(sel);
+    if(idx>0){const pm=ms[idx-1];const pk=S.kpi.find(k=>k.m===pm);
+      prevAgg={rev:pk.rev,cost:monthCost(pm),pct:pk.rev?monthCost(pm)/pk.rev*100:0};}
+  }
+  const trend=(cur,prev,goodWhenUp)=>{
+    if(prev==null||prev===0)return '';
+    const diff=(cur-prev)/prev*100;
+    if(Math.abs(diff)<0.05)return '<div class="trend" style="color:var(--mt)">━ เท่าเดือนก่อน</div>';
+    const up=diff>0;const good=goodWhenUp?up:!up;
+    return `<div class="trend" style="color:${good?'var(--gr)':'var(--rd)'}">${up?'▲':'▼'} ${Math.abs(diff).toFixed(1)}% จากเดือนก่อน</div>`;
+  };
   $('k1').innerHTML=`
-   <div class="kpi"><div class="l">รายได้รวม</div><div class="v">${M0(agg.rev)}</div><div class="s">บาท (Revenue)</div></div>
-   <div class="kpi r"><div class="l">มูลค่าจ่ายออก</div><div class="v">${M0(agg.cost)}</div><div class="s">บาท (TotalIssueCost)</div></div>
-   <div class="kpi y"><div class="l">% ต้นทุนต่อรายได้</div><div class="v">${pct.toFixed(2)}%</div><div class="s">Material Cost Ratio</div></div>
-   <div class="kpi p"><div class="l">มูลค่าคงคลัง</div><div class="v">${M0(S.products.reduce((s,p)=>s+p.cur*p.price,0))}</div><div class="s">บาท (Inventory Value)</div></div>`;
+   <div class="kpi n"><div class="l" title="ยอดรายได้รวมที่กรอกไว้ใน Monthly KPI สำหรับช่วงที่เลือก">รายได้รวม</div><div class="v">${M0(agg.rev)}</div><div class="s">บาท (Revenue)</div>${trend(agg.rev,prevAgg?.rev,true)}</div>
+   <div class="kpi r"><div class="l" title="ผลรวมมูลค่าใบเบิกที่มีสถานะจ่ายแล้วในช่วงที่เลือก">มูลค่าจ่ายออก</div><div class="v">${M0(agg.cost)}</div><div class="s">บาท (TotalIssueCost)</div>${trend(agg.cost,prevAgg?.cost,false)}</div>
+   <div class="kpi ${pctCls}"><div class="l" title="มูลค่าจ่ายออก ÷ รายได้รวม × 100 — เขียว <8% / เหลือง 8-12% / แดง >12%">% ต้นทุนต่อรายได้</div><div class="v">${pct.toFixed(2)}%</div><div class="s">Material Cost Ratio</div>${trend(pct,prevAgg?.pct,false)}</div>
+   <div class="kpi n"><div class="l" title="ผลรวม คงเหลือ × ราคา/หน่วย ของสินค้าที่ใช้งานอยู่ทั้งหมด ณ ปัจจุบัน">มูลค่าคงคลัง</div><div class="v">${M0(S.products.reduce((s,p)=>s+p.cur*p.price,0))}</div><div class="s">บาท (Inventory Value)</div></div>`;
   $('k2').innerHTML=`
-   <div class="kpi"><div class="l">ผู้ป่วยนอก (OPD)</div><div class="v">${N(agg.opd)}</div><div class="s">ต้นทุน/ครั้ง ${M(agg.opd?agg.cost/agg.opd:0)} บาท</div></div>
-   <div class="kpi"><div class="l">ผู้ป่วยใน (IPD)</div><div class="v">${N(agg.ipd)}</div><div class="s">ต้นทุน/ราย ${M(agg.ipd?agg.cost/agg.ipd:0)} บาท</div></div>
-   <div class="kpi"><div class="l">วันนอน (IPD Day)</div><div class="v">${N(agg.ipdd)}</div><div class="s">ต้นทุน/วันนอน ${M(agg.ipdd?agg.cost/agg.ipdd:0)} บาท</div></div>
-   <div class="kpi g"><div class="l">ใบเบิกค้างดำเนินการ</div><div class="v">${N(S.reqs.filter(r=>r.status===ST.P||r.status===ST.A).length)}</div><div class="s">รายการรอตรวจสอบ/รอจ่าย</div></div>
-   <div class="kpi"><div class="l">จำนวนการเบิกทั้งหมด</div><div class="v">${N(S.reqs.filter(r=>r.status===ST.I&&(sel==='ALL'||ym(r.issDate)===sel)).length)}</div><div class="s">ใบเบิกที่จ่ายแล้ว (ช่วงที่เลือก)</div></div>`;
+   <div class="kpi n"><div class="l">ผู้ป่วยนอก (OPD)</div><div class="v">${N(agg.opd)}</div><div class="s">ต้นทุน/ครั้ง ${M(agg.opd?agg.cost/agg.opd:0)} บาท</div></div>
+   <div class="kpi n"><div class="l">ผู้ป่วยใน (IPD)</div><div class="v">${N(agg.ipd)}</div><div class="s">ต้นทุน/ราย ${M(agg.ipd?agg.cost/agg.ipd:0)} บาท</div></div>
+   <div class="kpi n"><div class="l">วันนอน (IPD Day)</div><div class="v">${N(agg.ipdd)}</div><div class="s">ต้นทุน/วันนอน ${M(agg.ipdd?agg.cost/agg.ipdd:0)} บาท</div></div>
+   <div class="kpi p" style="cursor:pointer" onclick="go('apv')" title="คลิกเพื่อไปหน้าตรวจสอบใบเบิก"><div class="l">ใบเบิกค้างดำเนินการ</div><div class="v">${N(S.reqs.filter(r=>r.status===ST.P||r.status===ST.A).length)}</div><div class="s">รายการรอตรวจสอบ/รอจ่าย — คลิกเพื่อดู</div></div>
+   <div class="kpi n"><div class="l">จำนวนการเบิกทั้งหมด</div><div class="v">${N(S.reqs.filter(r=>r.status===ST.I&&(sel==='ALL'||ym(r.issDate)===sel)).length)}</div><div class="s">ใบเบิกที่จ่ายแล้ว (ช่วงที่เลือก)</div></div>`;
 
   const actProd=S.products.filter(p=>p.act==1);
   const zeroN=actProd.filter(p=>p.cur<=0).length, lowN=actProd.filter(p=>p.cur>0&&p.cur<=p.min).length, okN=actProd.length-zeroN-lowN;
   $('k3').innerHTML=`
-   <div class="kpi"><div class="l">จำนวนสินค้าทั้งหมด</div><div class="v">${N(actProd.length)}</div><div class="s">รายการที่ใช้งานอยู่</div></div>
-   <div class="kpi g"><div class="l">Stock พร้อมจ่าย</div><div class="v">${N(okN)}</div><div class="s">รายการ (ปกติ)</div></div>
-   <div class="kpi y"><div class="l">สินค้าใกล้หมด</div><div class="v">${N(lowN)}</div><div class="s">รายการ (≤ Min)</div></div>
-   <div class="kpi r"><div class="l">สินค้าหมด</div><div class="v">${N(zeroN)}</div><div class="s">รายการ (คงเหลือ 0)</div></div>`;
+   <div class="kpi n"><div class="l">จำนวนสินค้าทั้งหมด</div><div class="v">${N(actProd.length)}</div><div class="s">รายการที่ใช้งานอยู่</div></div>
+   <div class="kpi g" style="cursor:pointer" onclick="go('prod');$('fPd').value='ok';rProd()" title="คลิกเพื่อดูรายการ"><div class="l">Stock พร้อมจ่าย</div><div class="v">${N(okN)}</div><div class="s">รายการ (ปกติ) — คลิกเพื่อดู</div></div>
+   <div class="kpi y" style="cursor:pointer" onclick="go('prod');$('fPd').value='low';rProd()" title="คลิกเพื่อดูรายการ"><div class="l">สินค้าใกล้หมด</div><div class="v">${N(lowN)}</div><div class="s">รายการ (≤ Min) — คลิกเพื่อดู</div></div>
+   <div class="kpi r" style="cursor:pointer" onclick="go('prod');$('fPd').value='zero';rProd()" title="คลิกเพื่อดูรายการ"><div class="l">สินค้าหมด</div><div class="v">${N(zeroN)}</div><div class="s">รายการ (คงเหลือ 0) — คลิกเพื่อดู</div></div>`;
 
   const rcvRows=S.receives.filter(x=>sel==='ALL'||ym(x.date)===sel);
   const rcvDocs=new Set(rcvRows.map(x=>x.no)).size;
   const rcvValue=rcvRows.reduce((s,x)=>s+x.total,0);
   const rcvPending=rcvRows.filter(x=>x.pending>0).length;
   $('k4').innerHTML=`
-   <div class="kpi"><div class="l">มูลค่ารับเข้า</div><div class="v">${M0(rcvValue)}</div><div class="s">บาท (ช่วงที่เลือก)</div></div>
-   <div class="kpi"><div class="l">จำนวนรายการรับ</div><div class="v">${N(rcvDocs)}</div><div class="s">ใบรับ (ช่วงที่เลือก)</div></div>
+   <div class="kpi n"><div class="l">มูลค่ารับเข้า</div><div class="v">${M0(rcvValue)}</div><div class="s">บาท (ช่วงที่เลือก)</div></div>
+   <div class="kpi n"><div class="l">จำนวนรายการรับ</div><div class="v">${N(rcvDocs)}</div><div class="s">ใบรับ (ช่วงที่เลือก)</div></div>
    <div class="kpi y"><div class="l">รายการค้างรับ</div><div class="v">${N(rcvPending)}</div><div class="s">รายการที่รับไม่ครบ</div></div>`;
 
   const data=S.kpi.map(k=>({m:k.m,rev:k.rev,cost:monthCost(k.m)}));
@@ -588,6 +617,18 @@ function rDash(){
      <td><div class="bar"><i style="width:${x.v/tot*100}%;background:var(--pp)"></i></div>
      <small style="color:var(--mt)">${(x.v/tot*100).toFixed(1)}%</small></td></tr>`).join('')
     :'<tr><td colspan="4" class="empty">ยังไม่มีข้อมูลการจ่ายออกในช่วงที่เลือก</td></tr>';
+
+  const byItem={};
+  iss.forEach(r=>r.items.forEach(i=>{byItem[i.code]=byItem[i.code]||{name:i.name,qty:0,v:0};byItem[i.code].qty+=i.iq;byItem[i.code].v+=i.total||0;}));
+  const topTot=Object.values(byItem).reduce((s,x)=>s+x.v,0)||1;
+  const topEnt=Object.entries(byItem).sort((a,b)=>b[1].v-a[1].v).slice(0,10);
+  $('topItemsT').innerHTML=topEnt.length?topEnt.map(([code,x])=>
+    `<tr><td><b>${esc(code)}</b></td><td>${esc(x.name)}</td><td class="r">${N(x.qty)}</td><td class="r"><b>${M(x.v)}</b></td>
+     <td><div class="bar"><i style="width:${x.v/topTot*100}%;background:var(--acc)"></i></div>
+     <small style="color:var(--mt)">${(x.v/topTot*100).toFixed(1)}%</small></td></tr>`).join('')
+    :'<tr><td colspan="5" class="empty">ยังไม่มีข้อมูลการจ่ายออกในช่วงที่เลือก</td></tr>';
+
+  $('dashAsOf').textContent='ข้อมูล ณ '+new Date().toLocaleString('th-TH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
   rCatCost();
 }
 function isoWeekKey(d){
