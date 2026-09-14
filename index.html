@@ -73,6 +73,20 @@ button{padding:8px 14px;border:none;border-radius:6px;font-size:12.8px;font-weig
 .flowlog div{padding:7px 10px;border-bottom:1px solid #eef2f7;display:flex;gap:8px}
 .flowlog span{color:var(--mt);white-space:nowrap;font-size:11px}
 .hide{display:none!important}
+/* ---- kiosk mode: mobile QR entry point, single-purpose ทำใบเบิก view ---- */
+.kioskbar{display:none}
+body.kiosk aside{display:none}
+body.kiosk main{max-width:100vw;padding-top:64px}
+body.kiosk .top .rw,body.kiosk .introcard{display:none}
+body.kiosk .kioskbar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  position:fixed;top:0;left:0;right:0;height:52px;padding:0 16px;background:var(--nav);color:#fff;z-index:60}
+.kioskbar b{font-size:14px}
+.kioskbar button{background:transparent;color:#9db3dd;font-size:11.5px;text-decoration:underline;padding:6px 0}
+@media(max-width:520px){
+  body.kiosk .grid.g3{grid-template-columns:1fr}
+  body.kiosk .rw{flex-direction:column;align-items:stretch}
+  body.kiosk .rw button{width:100%}
+}
 @media(max-width:860px){aside{width:84px}.brand h1,.brand span,.rolebox,nav .ngrp,.sf,.userbadge span{display:none}main{max-width:100vw;padding:14px}
 nav a{flex-direction:column;justify-content:center;gap:3px;padding:8px 4px;position:relative}
 nav a i{width:auto;font-size:16px}
@@ -118,6 +132,8 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
 </style>
 </head>
 <body>
+
+<div class="kioskbar"><b>✎ ทำใบเบิกวัสดุ — PTW STOCK</b><button onclick="doLogout()">ออกจากระบบ</button></div>
 
 <div id="loginScreen">
   <div class="loginbox">
@@ -204,13 +220,13 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
 
   <!-- ========== ทำใบเบิก ========== -->
   <section class="page" id="p-req">
-    <div class="step">
+    <div class="step introcard">
       <div><b>1. เลือกหน่วยงาน</b>ระบุแผนกผู้ขอเบิก</div>
       <div style="border-left-color:var(--pp)"><b>2. เลือกวัสดุ</b>เพิ่มได้ไม่จำกัดรายการ</div>
       <div style="border-left-color:var(--or)"><b>3. ระบุจำนวน</b>จำนวนที่ต้องการ</div>
       <div style="border-left-color:var(--gr)"><b>4. บันทึกเบิก</b>ระบบออกเลขที่และตัดสต็อกอัตโนมัติทันที</div>
     </div>
-    <div class="card"><h3>จุดเข้าใช้งานสำหรับผู้เบิก (ไม่ต้องมี Outlook)</h3>
+    <div class="card introcard"><h3>จุดเข้าใช้งานสำหรับผู้เบิก (ไม่ต้องมี Outlook)</h3>
       <div class="qr"><img id="qrimg" width="132" height="132" alt="QR">
         <div style="font-size:12.5px;line-height:1.9;color:var(--mt)">
           สแกน QR Code เพื่อเปิดฟอร์มใบเบิกบนมือถือ<br>
@@ -1004,9 +1020,10 @@ async function enterApp(authUser){
   $('roleAdminBox').style.display=curUser.role==='all'?'':'none';
   $('role').value=curUser.role;applyRoleUI(curUser.role);
   await fetchAll();initForms();renderAll();
-  if(location.hash==='#req'&&(curUser.role==='all'||curUser.role==='req'))go('req');
+  if(location.hash==='#req'&&curUser.role==='all')go('req');
 }
 async function boot(){
+  if(location.hash==='#req')document.body.classList.add('kiosk');
   const{data:{session}}=await sbClient.auth.getSession();
   if(session){await enterApp(session.user);}else{$('loginScreen').classList.remove('off');}
 }
