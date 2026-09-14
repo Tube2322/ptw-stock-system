@@ -95,14 +95,6 @@ body.kiosk .kioskbar{display:flex;align-items:center;justify-content:space-betwe
 .kioskbar b{font-size:14px}
 .kioskbar button{background:transparent;color:#9db3dd;font-size:11.5px;text-decoration:underline;padding:6px 0}
 body.kiosk .kiosk-hide{display:none}
-body.kiosk main{padding-bottom:84px}
-.kiosk-cta{display:none}
-body.kiosk .kiosk-cta{display:flex;align-items:center;justify-content:space-between;gap:10px;
-  position:fixed;bottom:0;left:0;right:0;max-width:712px;margin:0 auto;background:#fff;border:1px solid var(--ln);border-bottom:none;
-  padding:10px 14px;z-index:55;box-shadow:0 -4px 14px rgba(20,40,90,.08);border-radius:12px 12px 0 0}
-.kiosk-cta .sum{font-size:12px;color:var(--mt)}
-.kiosk-cta .sum b{display:block;font-size:16px;color:var(--pp)}
-.kiosk-cta button{flex:1;max-width:220px;padding:12px;font-size:13.5px}
 @media(max-width:520px){
   body.kiosk .grid.g3{grid-template-columns:1fr}
   body.kiosk .rw{flex-direction:column;align-items:stretch}
@@ -301,15 +293,10 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่ขอ</th><th class="kiosk-hide-col">หน่วย</th><th class="r kiosk-hide-col">ราคา/หน่วย</th><th class="r">มูลค่าประมาณ</th><th class="c">ลบ</th></tr></thead>
         <tbody id="rqT"></tbody></table></div>
       <div style="margin-top:11px"><label>หมายเหตุ / วัตถุประสงค์การใช้งาน</label><textarea id="rqRm" rows="2"></textarea></div>
-      <div class="rw kiosk-hide" style="justify-content:flex-end;margin-top:12px">
+      <div class="rw" style="justify-content:flex-end;margin-top:12px">
         <div style="font-size:13px;margin-right:12px">มูลค่าประมาณ: <b id="rqSum" style="color:var(--pp);font-size:18px">0.00</b> บาท</div>
         <button class="b2 no-viewer" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp no-viewer" onclick="saveRq()">✓ ส่งคำขอเบิก (รอคลังตรวจสอบ)</button></div></div>
   </section>
-  <div class="kiosk-cta">
-    <div class="sum">รายการ <span id="ctaCnt">0</span> ชิ้น<b id="ctaSum">0.00 บาท</b></div>
-    <button class="b2" onclick="clrRq()" style="flex:0 0 auto;max-width:none">ล้าง</button>
-    <button class="bp" onclick="saveRq()">✓ ส่งคำขอเบิก</button>
-  </div>
 
   <!-- ========== ติดตามสถานะ ========== -->
   <section class="page" id="p-track">
@@ -758,7 +745,6 @@ function rRqCart(){
    :'<tr><td colspan="8" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่ต้องการเบิกได้ไม่จำกัดจำนวนรายการ</td></tr>';
   const sum=rqCart.reduce((s,r)=>s+r.rq*r.price,0);
   $('rqSum').textContent=M(sum);
-  if($('ctaCnt')){$('ctaCnt').textContent=N(rqCart.reduce((s,r)=>s+r.rq,0));$('ctaSum').textContent=M(sum)+' บาท';}
 }
 async function saveRq(){
   if(!rqCart.length)return toast('กรุณาเพิ่มรายการวัสดุอย่างน้อย 1 รายการ');
