@@ -415,15 +415,21 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <div class="tw"><table><thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อ-นามสกุล</th><th class="c">สิทธิ์ปัจจุบัน</th><th style="width:190px">เปลี่ยนสิทธิ์เป็น</th><th class="c">บันทึก</th></tr></thead><tbody id="userT"></tbody></table></div></div>
     <div class="card hide" id="purgeMonthCard" style="border-top:3px solid var(--or)"><h3>🗄 ลบข้อมูลย้อนหลังรายเดือน (เฉพาะผู้ดูแลระบบ)</h3>
       <p style="font-size:12.5px;color:var(--mt);margin-bottom:12px">ลบใบเบิก/ใบรับ/ประวัติเคลื่อนไหวสต็อกของเดือนที่เลือกทิ้งถาวร เพื่อประหยัดพื้นที่ — ไม่กระทบยอดสต็อกปัจจุบัน และไม่ลบตัวชี้วัด Monthly KPI</p>
+      <div class="step" style="margin-bottom:14px">
+        <div><b>1. เลือกเดือน</b>เลือกเดือนที่ต้องการลบด้านล่าง</div>
+        <div style="border-left-color:var(--pp)"><b>2. ดาวน์โหลดก่อน</b>ต้องกด "ดาวน์โหลด CSV" ให้เสร็จก่อนเสมอ ปุ่มลบจะยังกดไม่ได้จนกว่าจะโหลดแล้ว</div>
+        <div style="border-left-color:var(--or)"><b>3. ยืนยันรหัสผ่าน</b>กดลบแล้วต้องพิมพ์รหัสผ่านบัญชีแอดมินของคุณเองให้ถูกต้องก่อน ระบบถึงจะลบจริง</div>
+        <div style="border-left-color:var(--rd)"><b>4. ลบถาวร</b>เมื่อยืนยันรหัสถูกต้อง ข้อมูลเดือนนั้นจะถูกลบทันที กู้คืนไม่ได้</div>
+      </div>
       <div class="rw" style="margin-bottom:10px">
         <div style="flex:1;min-width:170px"><label>เลือกเดือนที่จะลบ</label><select id="pgMonth" onchange="rPurgeMonth()"></select></div>
       </div>
       <div id="pgSummary" style="font-size:12.8px;line-height:1.9;margin-bottom:12px"></div>
       <div class="rw">
         <button class="b2" id="pgExportBtn" onclick="exportPurgeMonth()">⤓ ดาวน์โหลดข้อมูลเดือนนี้ก่อนลบ (CSV)</button>
-        <button class="br" id="pgDeleteBtn" onclick="openPurgeConfirm()" disabled>🗑 ลบข้อมูลเดือนนี้ถาวร</button>
+        <button class="br" id="pgDeleteBtn" onclick="openPurgeConfirm()" disabled title="ต้องดาวน์โหลดข้อมูลก่อนถึงจะกดปุ่มนี้ได้">🗑 ลบข้อมูลเดือนนี้ถาวร</button>
       </div>
-      <p id="pgExportHint" style="font-size:11.5px;color:var(--or);margin-top:8px">⚠ กรุณาดาวน์โหลดข้อมูลก่อน ปุ่มลบจะเปิดใช้งานหลังดาวน์โหลดแล้ว</p>
+      <p id="pgExportHint" style="font-size:11.5px;color:var(--or);margin-top:8px">⚠ ต้องกด "ดาวน์โหลดข้อมูล" ให้เสร็จก่อน ปุ่มลบจะยังปิดอยู่จนกว่าจะดาวน์โหลดเดือนนี้แล้ว — หลังจากนั้นกดลบจะให้พิมพ์รหัสผ่านบัญชีแอดมินของคุณเพื่อยืนยันอีกครั้งก่อนลบจริง</p>
     </div>
     <div class="card hide" id="resetDataCard" style="border-top:3px solid var(--rd)"><h3>⚠ รีเซ็ตข้อมูลระบบ (เฉพาะผู้ดูแลระบบ)</h3>
       <p style="font-size:12.5px;color:var(--mt);margin-bottom:12px">ใช้ตอนอยากล้างข้อมูลตัวอย่าง/ข้อมูลเดโม่ทั้งหมดออก ก่อนเริ่มกรอกข้อมูลจริงของหน่วยงาน</p>
