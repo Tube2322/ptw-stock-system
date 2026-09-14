@@ -201,11 +201,6 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
 
 <aside>
   <div class="brand"><h1>PTW STOCK SYSTEM</h1><span>รับเข้า · จ่ายออก · วิเคราะห์ต้นทุน</span></div>
-  <div class="rolebox" id="roleAdminBox" style="display:none"><label>บทบาทผู้ใช้งาน (พรีวิว — ผู้ดูแลระบบเท่านั้น)</label>
-    <select id="role" onchange="setRole()">
-      <option value="all">ผู้ดูแลระบบ (ทุกสิทธิ์)</option>
-      <option value="viewer">ผู้ชม (อ่านอย่างเดียว)</option>
-    </select></div>
   <nav id="nav">
     <div class="ngrp" data-r="all,viewer">ภาพรวม</div>
     <a class="on" data-p="dash" data-r="all,viewer"><i><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></i><span>Dashboard</span></a>
@@ -456,6 +451,28 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       </div>
     </div>
     <div class="card hide" id="userMgmtCard"><h3>จัดการผู้ใช้งานและสิทธิ์ (เฉพาะผู้ดูแลระบบ)</h3>
+      <div class="grid g2" style="margin-bottom:16px">
+        <div style="background:#f4f7fb;border-radius:8px;padding:11px 13px">
+          <b style="font-size:12.8px;color:var(--tx)">👑 ผู้ดูแลระบบ (all)</b>
+          <ul style="margin:6px 0 0 18px;font-size:11.8px;line-height:1.8;color:var(--tx)">
+            <li>ใช้งานได้ทุกหน้า ทุกฟังก์ชัน — เพิ่ม/แก้ไข/ลบข้อมูลได้ทุกจุด</li>
+            <li>ทำใบเบิก, รับเข้า, อนุมัติ/ปฏิเสธ/จ่ายออกใบเบิก, แก้ไขจำนวนย้อนหลัง</li>
+            <li>จัดการสินค้า/หน่วยงาน/ตัวชี้วัด KPI (เพิ่ม แก้ไข ลบ)</li>
+            <li>เห็นและเข้าหน้า "ตั้งค่าบัญชี" ได้เต็ม — จัดการผู้ใช้/ปรับสิทธิ์/ลบข้อมูลย้อนหลังรายเดือน</li>
+            <li>ลดสิทธิ์ตัวเองเป็นผู้ชมได้ ก็ต่อเมื่อมีแอดมินคนอื่นอยู่แล้วอย่างน้อย 1 คน (กันระบบไม่มีแอดมินเหลือ)</li>
+          </ul>
+        </div>
+        <div style="background:#f4f7fb;border-radius:8px;padding:11px 13px">
+          <b style="font-size:12.8px;color:var(--tx)">👁 ผู้ชม (viewer)</b>
+          <ul style="margin:6px 0 0 18px;font-size:11.8px;line-height:1.8;color:var(--tx)">
+            <li>เห็น<b>ทุกหน้าและข้อมูลเหมือนแอดมินทุกอย่าง</b> ไม่มีหน้าไหนถูกซ่อน</li>
+            <li><b>กดปุ่มที่เขียนข้อมูลไม่ได้เลย</b> — ปุ่มเพิ่ม/บันทึก/อนุมัติ/ปฏิเสธ/จ่ายออก/แก้ไข/ลบ ถูกซ่อนหมดทุกหน้า</li>
+            <li>แม้พยายามเรียกผ่านโค้ด/API ตรงก็ยังถูกบล็อกที่ฐานข้อมูลอีกชั้น (ไม่ใช่แค่ซ่อนปุ่ม)</li>
+            <li><b>ไม่เห็นหัวข้อ "ตั้งค่าบัญชี" เลย</b> แม้เรียกตรงก็เข้าไม่ได้ — หน้านี้ใช้ได้เฉพาะแอดมินเท่านั้น</li>
+            <li>เหมาะสำหรับผู้บริหาร/ผู้ตรวจสอบที่ต้องการดูข้อมูลอย่างเดียว ไม่ต้องแก้ไขอะไร</li>
+          </ul>
+        </div>
+      </div>
       <div class="tw"><table><thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อ-นามสกุล</th><th class="c">สิทธิ์ปัจจุบัน</th><th style="width:190px">เปลี่ยนสิทธิ์เป็น</th><th class="c">บันทึก</th></tr></thead><tbody id="userT"></tbody></table></div></div>
     <div class="card hide" id="purgeMonthCard" style="border-top:3px solid var(--or)"><h3>🗄 ลบข้อมูลย้อนหลังรายเดือน (เฉพาะผู้ดูแลระบบ)</h3>
       <p style="font-size:12.5px;color:var(--mt);margin-bottom:12px">ลบใบเบิก/ใบรับ/ประวัติเคลื่อนไหวสต็อกของเดือนที่เลือกทิ้งถาวร เพื่อประหยัดพื้นที่ — ไม่กระทบยอดสต็อกปัจจุบัน และไม่ลบตัวชี้วัด Monthly KPI</p>
@@ -560,7 +577,6 @@ function applyRoleUI(r){
   const vis=[...document.querySelectorAll('#nav a')].filter(a=>!a.classList.contains('hide'));
   if(vis.length&&!vis.some(a=>a.classList.contains('on')))go(vis[0].dataset.p);
 }
-function setRole(){const v=$('role').value;document.body.classList.toggle('viewer-mode',v==='viewer');applyRoleUI(v);}
 
 /* ============ 6. DASHBOARD ============ */
 const monthCost=m=>S.reqs.filter(r=>r.status===ST.I&&ym(r.issDate)===m).reduce((s,r)=>s+r.total,0);
@@ -1263,8 +1279,7 @@ async function enterApp(authUser){
   document.body.classList.toggle('viewer-mode',curUser.role==='viewer');
   $('loginScreen').classList.add('off');
   $('loName').textContent=curUser.full_name+' ('+curUser.username+')';
-  $('roleAdminBox').style.display=curUser.role==='all'?'':'none';
-  $('role').value=curUser.role;applyRoleUI(curUser.role);
+  applyRoleUI(curUser.role);
   await fetchAll();initForms();renderAll();
   if(location.hash==='#req'&&curUser.role==='all')go('req');
 }
