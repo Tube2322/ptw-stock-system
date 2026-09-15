@@ -306,6 +306,24 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
       <div class="rw" style="justify-content:flex-end;margin-top:12px">
         <div class="kiosk-price" style="font-size:13px;margin-right:12px">มูลค่าประมาณ: <b id="rqSum" style="color:var(--pp);font-size:18px">0.00</b> บาท</div>
         <button class="b2 no-viewer" onclick="clrRq()">ล้างฟอร์ม</button><button class="bp no-viewer" onclick="saveRq()">✓ ส่งคำขอเบิก (รอคลังตรวจสอบ)</button></div></div>
+    <div class="card" style="border-top:3px solid var(--or)"><h3>↺ แจ้งคืนวัสดุ (Return)</h3>
+      <p style="font-size:12px;color:var(--mt);margin-bottom:12px">สำหรับแจ้งคืนวัสดุที่เบิกเกินความจำเป็นหรือไม่ได้ใช้ — เป็นการแจ้งเตือนให้คลังทราบเท่านั้น <b>ไม่มีผลเพิ่มยอดคงเหลือในสต็อก</b></p>
+      <div class="grid g3" style="margin-bottom:12px">
+        <div><label>วันที่คืน *</label><input type="date" id="rtDate"></div>
+        <div><label>หน่วยงาน *</label><select id="rtDep"></select></div>
+        <div><label>ชื่อผู้คืน *</label><input id="rtBy" placeholder="ชื่อ-นามสกุล"></div>
+      </div>
+      <div class="rw" style="background:#fff8ee;padding:12px;border-radius:8px;border:1px dashed #f0dcb0">
+        <div style="flex:2.6;min-width:190px"><label>วัสดุที่ต้องการคืน</label><select id="rtP"></select></div>
+        <div style="flex:1"><label>จำนวนที่คืน</label><input type="number" id="rtQ" min="1" value="1"></div>
+        <button class="b1 no-viewer" onclick="addRt()">+ เพิ่มรายการ</button>
+      </div>
+      <div class="tw" style="margin-top:12px"><table id="rtTable">
+        <thead><tr><th>#</th><th>รหัส</th><th>ชื่อวัสดุ</th><th class="r">จำนวนที่คืน</th><th class="kiosk-hide-col">หน่วย</th><th class="c">ลบ</th></tr></thead>
+        <tbody id="rtT"></tbody></table></div>
+      <div style="margin-top:11px"><label>หมายเหตุ</label><textarea id="rtRm" rows="2"></textarea></div>
+      <div class="rw" style="justify-content:flex-end;margin-top:12px">
+        <button class="b2 no-viewer" onclick="clrRt()">ล้างฟอร์ม</button><button class="b1 no-viewer" onclick="saveRt()">↺ แจ้งคืนวัสดุ</button></div></div>
   </section>
 
   <!-- ========== ติดตามสถานะ ========== -->
@@ -509,7 +527,7 @@ const AUTH_DOMAIN='@ptw.local';
 const ST={P:'รอตรวจสอบ',A:'อนุมัติแล้ว',I:'จ่ายแล้ว',R:'ปฏิเสธ'};
 const PC={[ST.P]:'p-pend',[ST.A]:'p-apv',[ST.I]:'p-iss',[ST.R]:'p-rej'};
 let S={products:[],depts:[],receives:[],reqs:[],trans:[],flow:[],kpi:[],users:[]};
-let rqCart=[],rcCart=[],curReq=null,curUser=null;
+let rqCart=[],rcCart=[],rtCart=[],curReq=null,curUser=null;
 
 /* ============ 2. UTILITIES ============ */
 const $=i=>document.getElementById(i);
@@ -733,7 +751,9 @@ function fillSel(){
   const opt=S.products.filter(p=>p.act==1).map(p=>`<option value="${esc(p.code)}">${esc(p.code)} — ${esc(p.name)}</option>`).join('');
   const v0=$('rqP').value;$('rqP').innerHTML='<option value="">— เลือกวัสดุ —</option>'+opt;$('rqP').value=v0||'';
   const vc=$('rcP').value;$('rcP').innerHTML=opt;if(vc)$('rcP').value=vc;
+  const vt=$('rtP').value;$('rtP').innerHTML='<option value="">— เลือกวัสดุ —</option>'+opt;$('rtP').value=vt||'';
   const dv=$('rqDep').value;$('rqDep').innerHTML=S.depts.map(d=>`<option value="${esc(d.c)}">${esc(d.n)}</option>`).join('');if(dv)$('rqDep').value=dv;
+  const dt=$('rtDep').value;$('rtDep').innerHTML=S.depts.map(d=>`<option value="${esc(d.c)}">${esc(d.n)}</option>`).join('');if(dt)$('rtDep').value=dt;
   rqBal();rcPr();
 }
 function rqBal(){const p=P($('rqP').value);$('rqAvl').value=p?N(p.cur)+' '+p.unit:'';}
@@ -767,6 +787,31 @@ async function saveRq(){
   if(error)return toast('บันทึกไม่สำเร็จ: '+error.message);
   clrRq();await fetchAll();renderAll();toast('ส่งคำขอเบิก '+no+' เรียบร้อย — รอคลังตรวจสอบก่อนตัดสต็อก');
 }
+function addRt(){
+  const c=$('rtP').value,q=+$('rtQ').value;
+  if(!c)return toast('กรุณาเลือกวัสดุ');
+  if(q<=0)return toast('จำนวนที่คืนต้องมากกว่า 0');
+  const p=P(c),ex=rtCart.find(x=>x.code===c);
+  if(ex)ex.qty+=q;else rtCart.push({code:c,name:p.name,unit:p.unit,qty:q,price:p.price});
+  $('rtQ').value=1;rRtCart();
+}
+function rRtCart(){
+  $('rtT').innerHTML=rtCart.length?rtCart.map((r,i)=>
+   `<tr><td>${i+1}</td><td><b>${r.code}</b></td><td>${r.name}</td><td class="r"><b style="color:var(--or)">${N(r.qty)}</b></td>
+    <td class="kiosk-hide-col">${r.unit}</td>
+    <td class="c">${(!curUser||isAdmin())?`<button class="bx" onclick="rtCart.splice(${i},1);rRtCart()">✕</button>`:'—'}</td></tr>`).join('')
+   :'<tr><td colspan="6" class="empty">ยังไม่มีรายการ — เพิ่มวัสดุที่ต้องการคืนได้ไม่จำกัดจำนวนรายการ</td></tr>';
+}
+async function saveRt(){
+  if(!rtCart.length)return toast('กรุณาเพิ่มรายการวัสดุอย่างน้อย 1 รายการ');
+  if(!$('rtDate').value)return toast('กรุณาระบุวันที่คืน');
+  if(!$('rtBy').value.trim())return toast('กรุณาระบุชื่อผู้คืน');
+  const items=rtCart.map(r=>({code:r.code,name:r.name,unit:r.unit,qty:r.qty,price:r.price}));
+  const{data:no,error}=await sbClient.rpc('fn_save_return',{p_dept:$('rtDep').value,p_by:$('rtBy').value.trim(),p_remark:$('rtRm').value,p_date:$('rtDate').value,p_items:items});
+  if(error)return toast('บันทึกไม่สำเร็จ: '+error.message);
+  clrRt();toast('แจ้งคืนวัสดุ '+no+' เรียบร้อย — แจ้งเตือนคลังแล้ว (ไม่มีผลต่อยอดสต็อก)');
+}
+function clrRt(){rtCart=[];$('rtRm').value='';$('rtDate').value=today();rRtCart();}
 function clrRq(){rqCart=[];$('rqRm').value='';$('rqDate').value=today();rRqCart();}
 
 /* ============ 8. TRACKING ============ */
@@ -1260,11 +1305,11 @@ function renderAll(){
   const b1=S.reqs.filter(r=>r.status===ST.P).length,b2=S.reqs.filter(r=>r.status===ST.A).length;
   $('bg1').textContent=b1||'';$('bg1').style.display=b1?'':'none';
   $('bg2').textContent=b2||'';$('bg2').style.display=b2?'':'none';
-  rDash();rRqCart();rTrack();rApv();rIss();rRcCart();rRcH();rProd();rLg();rKpi();rFlow();rDept();rSettings();
+  rDash();rRqCart();rRtCart();rTrack();rApv();rIss();rRcCart();rRcH();rProd();rLg();rKpi();rFlow();rDept();rSettings();
 }
 function qrLink(){return location.origin+location.pathname+location.search+'#req';}
 function initForms(){
-  $('rqDate').value=today();$('rcDate').value=today();$('kM').value=ym(today());
+  $('rqDate').value=today();$('rcDate').value=today();$('rtDate').value=today();$('kM').value=ym(today());
   $('qrimg').src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(qrLink());
 }
 async function dlQr(){
