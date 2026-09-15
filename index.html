@@ -365,7 +365,7 @@ label:has(+input:hover),label:has(+select:hover){color:var(--acc)}
         <div style="flex:1;min-width:190px"><input id="qPd" placeholder="🔍 ค้นหารหัส / ชื่อวัสดุ..." oninput="rProd()"></div>
         <select id="fPd" style="width:165px" onchange="rProd()"><option value="">ทุกสถานะ</option><option value="ok">ปกติ</option><option value="low">ต่ำกว่า Min</option><option value="zero">หมดสต็อก</option></select>
         <button class="b1 no-viewer" onclick="openPd()">+ เพิ่มวัสดุ</button></div>
-      <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อวัสดุ</th><th>หมวดหมู่</th><th>หน่วย</th><th class="r">ยอดยกมา</th><th class="r">คงเหลือ</th><th style="width:118px">ระดับสต็อก</th><th class="r">Min</th><th class="r">Reorder</th><th class="r">ราคา/หน่วย</th><th class="r">มูลค่ารวม</th><th class="c">สถานะ</th><th class="c">จัดการ</th></tr></thead><tbody id="pdT"></tbody></table></div></div>
+      <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อวัสดุ</th><th>หมวดหมู่</th><th>หน่วย</th><th class="r">ยอดยกมา</th><th class="r">คงเหลือ</th><th style="width:118px">ระดับสต็อก</th><th class="r">Min</th><th class="r">Reorder</th><th class="r">ราคา/หน่วย</th><th class="r">มูลค่ารวม</th><th>วันหมดอายุ</th><th class="c">สถานะ</th><th class="c">จัดการ</th></tr></thead><tbody id="pdT"></tbody></table></div></div>
   </section>
 
   <!-- ========== LEDGER ========== -->
@@ -547,7 +547,7 @@ async function fetchAll(){
   S.users=(userR.data||[]).map(u=>({id:u.id,username:u.username,full_name:u.full_name,role:u.role}));
   S.depts=(depR.data||[]).map(d=>({c:d.code,n:d.name}));
   const depName=c=>{const d=S.depts.find(x=>x.c===c);return d?d.n:c;};
-  S.products=(prodR.data||[]).map(p=>({id:p.id,code:p.code,name:p.name,unit:p.unit,price:+p.price,open:+p.open_qty,cur:+p.cur_qty,min:+p.min_qty,reorder:+p.reorder_point,act:p.active?1:0,category:p.category||'สิ้นเปลือง'}));
+  S.products=(prodR.data||[]).map(p=>({id:p.id,code:p.code,name:p.name,unit:p.unit,price:+p.price,open:+p.open_qty,cur:+p.cur_qty,min:+p.min_qty,reorder:+p.reorder_point,act:p.active?1:0,category:p.category||'สิ้นเปลือง',expiry:p.expiry_date||null}));
   const itemsByReq={};
   (itemR.data||[]).forEach(it=>{(itemsByReq[it.req_no]=itemsByReq[it.req_no]||[]).push({code:it.code,name:it.name,unit:it.unit,rq:+it.rq,iq:+it.iq,price:+it.price,total:+it.total});});
   S.reqs=(reqR.data||[]).map(r=>({no:r.no,date:r.req_date,dep:depName(r.dept_code),depCode:r.dept_code,by:r.requested_by,status:r.status,rm:r.remark||'',
@@ -963,13 +963,18 @@ function rProd(){
     const[c,t]=stat(p),base=Math.max(p.open,p.cur,p.min*2,1),pct=Math.min(100,p.cur/base*100);
     const col=c==='p-zero'?'var(--rd)':c==='p-low'?'var(--or)':'var(--gr)';
     const reorderFlag=p.reorder>0&&p.cur<=p.reorder?'<br><span class="pill p-low" style="margin-top:2px">ควรสั่งซื้อ</span>':'';
+    const expCell=(()=>{if(!p.expiry)return '<span style="color:var(--mt)">—</span>';
+      const days=Math.floor((new Date(p.expiry+'T00:00:00')-new Date(new Date().toDateString()))/86400000);
+      const cls=days<0?'p-zero':days<=30?'p-low':'p-ok';
+      return `<span class="pill ${cls}">${dd(p.expiry)}${days<0?' (หมดอายุแล้ว)':days<=30?' (เหลือ '+days+'วัน)':''}</span>`;})();
     return `<tr><td><b>${esc(p.code)}</b></td><td>${esc(p.name)}</td><td>${p.category==='ผ้า'?'<span class="pill p-ok">ผ้า</span>':'<span class="pill p-off">สิ้นเปลือง</span>'}</td><td>${esc(p.unit)}</td><td class="r">${N(p.open)}</td>
      <td class="r"><b style="font-size:13.5px">${N(p.cur)}</b></td>
      <td><div class="bar"><i style="width:${pct}%;background:${col}"></i></div></td>
      <td class="r">${N(p.min)}</td><td class="r">${p.reorder>0?N(p.reorder):'—'}</td><td class="r">${M(p.price)}</td><td class="r"><b>${M(p.cur*p.price)}</b></td>
+     <td>${expCell}</td>
      <td class="c">${p.act==1?`<span class="pill ${c}">${t}</span>`:'<span class="pill p-off">ปิดใช้งาน</span>'}${reorderFlag}</td>
      <td class="c">${isAdmin()?`<button class="b2" onclick="openPd(${p.id})">แก้ไข</button> <button class="bx" onclick="delPd(${p.id})">ลบ</button>`:'—'}</td></tr>`;}).join('')
-   :'<tr><td colspan="13" class="empty">ไม่พบข้อมูลวัสดุ</td></tr>';
+   :'<tr><td colspan="14" class="empty">ไม่พบข้อมูลวัสดุ</td></tr>';
 }
 function openPd(id){
   const p=id?S.products.find(x=>x.id===id):null;
@@ -983,6 +988,7 @@ function openPd(id){
     <div><label>OpeningStock (ยอดยกมา)</label><input type="number" id="fO" value="${p?p.open:0}"></div>
     <div><label>MinStock (จุดแจ้งเตือน)</label><input type="number" id="fM" value="${p?p.min:0}"></div>
     <div><label>ReorderPoint (จุดสั่งซื้อ)</label><input type="number" id="fR" value="${p?p.reorder:0}"></div>
+    <div><label>วันหมดอายุ (ถ้ามี)</label><input type="date" id="fExp" value="${p&&p.expiry?p.expiry:''}"></div>
     <div><label>หมวดหมู่ (สำหรับแยกต้นทุน)</label><select id="fCat">
       <option value="สิ้นเปลือง" ${!p||p.category!=='ผ้า'?'selected':''}>สิ้นเปลือง</option>
       <option value="ผ้า" ${p&&p.category==='ผ้า'?'selected':''}>ผ้า (ผ้าปู/ผ้าคลุม/เครื่องนุ่งห่ม)</option></select></div>
@@ -995,7 +1001,7 @@ function openPd(id){
 async function savePd(){
   const c=$('fC').value.trim(),n=$('fN').value.trim();
   if(!c||!n)return toast('กรุณาระบุรหัสและชื่อวัสดุ');
-  const id=$('fId').value,o={code:c,name:n,unit:$('fU').value.trim()||'ชิ้น',price:+$('fP').value,open_qty:+$('fO').value,min_qty:+$('fM').value,reorder_point:+$('fR').value,active:+$('fA').value===1,category:$('fCat').value};
+  const id=$('fId').value,o={code:c,name:n,unit:$('fU').value.trim()||'ชิ้น',price:+$('fP').value,open_qty:+$('fO').value,min_qty:+$('fM').value,reorder_point:+$('fR').value,active:+$('fA').value===1,category:$('fCat').value,expiry_date:$('fExp').value||null};
   let err;
   if(id){
     const p=S.products.find(x=>x.id==id);const nc=$('fCur')?+$('fCur').value:p.cur;
@@ -1005,6 +1011,7 @@ async function savePd(){
     if(p.cur!==nc)changes.push(`คงเหลือ: ${N(p.cur)} → ${N(nc)} ${o.unit}`);
     if(p.min!==o.min_qty)changes.push(`Min: ${N(p.min)} → ${N(o.min_qty)}`);
     if((p.act==1)!==o.active)changes.push(`สถานะ: ${p.act==1?'ใช้งาน':'ปิดใช้งาน'} → ${o.active?'ใช้งาน':'ปิดใช้งาน'}`);
+    if((p.expiry||'')!==(o.expiry_date||''))changes.push(`วันหมดอายุ: ${p.expiry?dd(p.expiry):'—'} → ${o.expiry_date?dd(o.expiry_date):'—'}`);
     const msg='ยืนยันบันทึกการแก้ไข '+p.code+'\n\n'+(changes.length?changes.join('\n'):'(ไม่มีค่าที่เปลี่ยนแปลง)');
     if(!confirm(msg))return;
     if(nc!==p.cur)await flowLog('Adjust','ปรับยอดคงเหลือ '+p.code+' จาก '+N(p.cur)+' → '+N(nc));
